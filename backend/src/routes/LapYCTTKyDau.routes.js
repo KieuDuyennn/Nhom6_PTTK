@@ -70,4 +70,14 @@ router.patch('/:maTT/xac-nhan', async (req, res, next) => {
   }
 });
 
+// DELETE /api/yeu-cau-thanh-toan/:maTT — Huỷ YCTT (khi quay lại)
+router.delete('/:maTT', async (req, res, next) => {
+  try {
+    const data = await ycttService.xoaYCTT(req.params.maTT);
+    res.json({ message: 'Đã hủy yêu cầu thanh toán', data });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;

@@ -49,3 +49,11 @@ export async function xacNhanYCTT(maTT) {
   const res = await apiClient.patch(`/yeu-cau-thanh-toan/${maTT}/xac-nhan`);
   return res.data;
 }
+
+/**
+ * Xóa/Hủy YCTT (khi quay lại danh sách)
+ */
+export async function xoaYCTT(maTT) {
+  const res = await apiClient.delete(`/yeu-cau-thanh-toan/${maTT}`);
+  return res.data;
+}

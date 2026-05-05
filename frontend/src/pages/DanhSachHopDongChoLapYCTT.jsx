@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import MainLayout from '../components/MainLayout';
 import { layDSHDChoYCTT, timKiemHD, taoYCTTKyDau } from '../services/lapYCTT.service';
 
-const MH_DanhSachHopDongChoLapYCTT = () => {
+const DanhSachHopDongChoLapYCTT = () => {
   const [user, setUser] = useState(null);
   const [keyword, setKeyword] = useState('');
   const [dsHopDong, setDsHopDong] = useState([]);
@@ -82,7 +82,7 @@ const MH_DanhSachHopDongChoLapYCTT = () => {
       <div className="mb-8">
         <div className="relative">
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
           </span>
           <input
             type="text"
@@ -95,7 +95,7 @@ const MH_DanhSachHopDongChoLapYCTT = () => {
         {/* Error banner */}
         {error && (
           <div className="mt-3 bg-rose-50 border border-rose-200 text-rose-600 px-4 py-3 rounded-xl text-[13px] font-semibold flex items-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
             {error}
           </div>
         )}
@@ -116,8 +116,8 @@ const MH_DanhSachHopDongChoLapYCTT = () => {
         <div className="bg-pink-50 border border-pink-200 rounded-2xl p-16 text-center">
           <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
             <svg className="text-primary" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-              <line x1="8" y1="11" x2="14" y2="11"/>
+              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+              <line x1="8" y1="11" x2="14" y2="11" />
             </svg>
           </div>
           <h3 className="text-[20px] font-extrabold text-navy mb-2">Không tìm thấy kết quả</h3>
@@ -191,4 +191,4 @@ const MH_DanhSachHopDongChoLapYCTT = () => {
   );
 };
 
-export default MH_DanhSachHopDongChoLapYCTT;
+export default DanhSachHopDongChoLapYCTT;

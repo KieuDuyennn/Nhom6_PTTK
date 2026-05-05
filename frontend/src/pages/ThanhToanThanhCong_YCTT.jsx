@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '../components/MainLayout';
 import { layChiTietYCTT } from '../services/lapYCTT.service';
 
-const MH_ThanhToanThanhCong_YCTT = () => {
+const ThanhToanThanhCong_YCTT = () => {
   const { maTT } = useParams();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
@@ -32,7 +32,7 @@ const MH_ThanhToanThanhCong_YCTT = () => {
           {/* Icon thành công */}
           <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-emerald-200">
             <svg className="text-emerald-500" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <polyline points="20 6 9 17 4 12"/>
+              <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
 
@@ -73,4 +73,4 @@ const MH_ThanhToanThanhCong_YCTT = () => {
   );
 };
 
-export default MH_ThanhToanThanhCong_YCTT;
+export default ThanhToanThanhCong_YCTT;

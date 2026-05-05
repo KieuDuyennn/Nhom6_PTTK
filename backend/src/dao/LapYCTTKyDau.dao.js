@@ -8,6 +8,13 @@ const supabase = require('../config/supabase');
  * Lấy danh sách hợp đồng đã ký xác nhận, join KHACH_HANG
  */
 async function layDSHDDaKyXacNhan() {
+  // Dọn rác: Tự động xoá các phiếu YCTT kỳ đầu đang ở trạng thái 'Mới' (do người dùng thoát ngang)
+  await supabase
+    .from('thanh_toan')
+    .delete()
+    .eq('loaitt', 'Tiền thuê')
+    .eq('trangthai', 'Mới');
+
   const { data, error } = await supabase
     .from('hop_dong')
     .select('*, khach_hang(*), thanh_toan(loaitt, trangthai)')
@@ -15,13 +22,13 @@ async function layDSHDDaKyXacNhan() {
     .order('ngaybatdau', { ascending: false });
 
   if (error) throw error;
-  
-  // Chỉ lấy những hợp đồng chưa có phiếu "Tiền thuê" nào (hoặc chỉ có phiếu đã hủy)
+
+  // Lọc bỏ những hợp đồng đã có phiếu "Tiền thuê" ở trạng thái "Chờ thanh toán"
   return (data || []).filter(hd => {
-    const hasTiềnThuê = hd.thanh_toan?.some(tt => 
-      tt.loaitt === 'Tiền thuê' && tt.trangthai !== 'Đã hủy' && tt.trangthai !== 'Thanh toán thất bại'
+    const hasChoThanhToan = hd.thanh_toan?.some(tt =>
+      tt.loaitt === 'Tiền thuê' && tt.trangthai === 'Chờ thanh toán'
     );
-    return !hasTiềnThuê;
+    return !hasChoThanhToan;
   });
 }
 
@@ -76,25 +83,25 @@ async function timKiem(keyword) {
   // Search theo tên KH
   const { data: byTen } = await supabase
     .from('hop_dong')
-    .select('*, khach_hang(*), thanh_toan(loaitt, trangthai)')
+    .select('*, khach_hang!inner(*), thanh_toan(loaitt, trangthai)')
     .eq('trangthai', 'Đã ký xác nhận')
     .ilike('khach_hang.hoten', k);
 
   // Search theo SĐT
   const { data: bySDT } = await supabase
     .from('hop_dong')
-    .select('*, khach_hang(*), thanh_toan(loaitt, trangthai)')
+    .select('*, khach_hang!inner(*), thanh_toan(loaitt, trangthai)')
     .eq('trangthai', 'Đã ký xác nhận')
     .ilike('khach_hang.sdt', k);
 
   // Gộp kết quả, loại bỏ trùng lặp theo mahd
   const map = new Map();
   [...(byMaHD || []), ...(byTen || []), ...(bySDT || [])].forEach(hd => {
-    // Tương tự, bỏ qua hợp đồng đã có yêu cầu thanh toán Tiền thuê
-    const hasTiềnThuê = hd.thanh_toan?.some(tt => 
-      tt.loaitt === 'Tiền thuê' && tt.trangthai !== 'Đã hủy' && tt.trangthai !== 'Thanh toán thất bại'
+    // Lọc bỏ những hợp đồng đã có phiếu "Tiền thuê" ở trạng thái "Chờ thanh toán"
+    const hasChoThanhToan = hd.thanh_toan?.some(tt =>
+      tt.loaitt === 'Tiền thuê' && tt.trangthai === 'Chờ thanh toán'
     );
-    if (!hasTiềnThuê && !map.has(hd.mahd)) map.set(hd.mahd, hd);
+    if (!hasChoThanhToan && !map.has(hd.mahd)) map.set(hd.mahd, hd);
   });
 
   return Array.from(map.values());
@@ -148,6 +155,19 @@ async function capNhatTrangThai(maTT, trangThai) {
 }
 
 /**
+ * Xóa phiếu thanh toán (khi người dùng quay lại/hủy)
+ */
+async function xoaThanhToan(maTT) {
+  const { data, error } = await supabase
+    .from('thanh_toan')
+    .delete()
+    .eq('matt', maTT);
+
+  if (error) throw error;
+  return data;
+}
+
+/**
  * Lấy DS thanh toán theo hợp đồng (kiểm tra đã có YCTT kỳ đầu chưa)
  */
 async function layDSTheoHopDong(maHD) {
@@ -170,7 +190,7 @@ async function layTienCocTheoHD(maHD) {
     .select('sotien')
     .eq('mahd', maHD)
     .eq('loaitt', 'Tiền cọc')
-    .eq('trangthai', 'Đã thanh toán')
+    .eq('trangthai', 'Đối soát thành công')
     .single();
 
   if (error) return 0;
@@ -181,15 +201,21 @@ async function layTienCocTheoHD(maHD) {
  * Sinh mã TT mới (TT + số tăng dần)
  */
 async function sinhMaTT() {
+  // Lấy tất cả mã TT của Tiền thuê để tìm số lớn nhất (tránh lỗi sort chuỗi TT99 > TT100 và tránh lấy nhầm TTC)
   const { data } = await supabase
     .from('thanh_toan')
     .select('matt')
-    .order('matt', { ascending: false })
-    .limit(1);
+    .eq('loaitt', 'Tiền thuê');
 
   if (data && data.length > 0) {
-    const lastNum = parseInt(data[0].matt.replace('TT', ''), 10);
-    return 'TT' + String(lastNum + 1).padStart(2, '0');
+    let maxNum = 0;
+    data.forEach(item => {
+      const num = parseInt(item.matt.replace(/\D/g, ''), 10);
+      if (!isNaN(num) && num > maxNum) {
+        maxNum = num;
+      }
+    });
+    return 'TT' + String(maxNum + 1).padStart(2, '0');
   }
   return 'TT01';
 }
@@ -230,6 +256,7 @@ module.exports = {
   them,
   docThongTinTT,
   capNhatTrangThai,
+  xoaThanhToan,
   layDSTheoHopDong,
   layTienCocTheoHD,
   sinhMaTT,

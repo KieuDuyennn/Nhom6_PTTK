@@ -5,6 +5,10 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Lấy thông tin user từ localStorage
+  const savedUser = localStorage.getItem('user');
+  const user = savedUser ? JSON.parse(savedUser) : null;
+
   const menuItems = [
     { id: 'phieu-yeu-cau', label: 'PYC Xem phòng', icon: '📋', path: '/phieu-yeu-cau' },
     { id: 'thanh-toan', label: 'Thanh toán cọc', icon: '$', path: '/thanh-toan' },
@@ -22,8 +26,8 @@ const Sidebar = () => {
       
       {/* Header */}
       <div className="px-6 pt-8 pb-6">
-        <h2 className="text-[18px] font-bold text-navy leading-tight">Nhân viên Sale</h2>
-        <p className="text-[12px] text-gray-400 mt-1">Quản lý hồ sơ khách thuê</p>
+        <h2 className="text-[18px] font-bold text-navy leading-tight">Nhân viên Kế Toán</h2>
+        <p className="text-[12px] text-gray-400 mt-1">{user?.hoten || 'Quản lý thu chi'}</p>
       </div>
 
       {/* Menu */}
