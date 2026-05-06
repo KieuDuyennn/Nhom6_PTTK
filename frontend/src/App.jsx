@@ -7,6 +7,9 @@ import DangKyThuePhong from './pages/DangKyThuePhong';
 import KetQuaTimKiemPhong from './pages/KetQuaTimKiemPhong';
 import DanhSachPhongChon from './pages/DanhSachPhongChon';
 import DatLichHen from './pages/DatLichHen';
+import MHDanhSachHopDong from './pages/MHDanhSachHopDong';
+import MHTaoBienBanTraPhong from './pages/MHTaoBienBanTraPhong';
+import MHXemTruocIn from './pages/MHXemTruocIn';
 
 function App() {
   return (
@@ -20,6 +23,9 @@ function App() {
         <Route path="/phieu-yeu-cau" element={<DanhSachPYCXemPhong />} />
         <Route path="/phieu-yeu-cau/:id" element={<ChiTietPYCXemPhong />} />
         <Route path="/ghi-nhan-xac-nhan-thue/:id" element={<GhiNhanXacNhanThue />} />
+        <Route path="/danh-sach-hop-dong" element={<MHDanhSachHopDong />} />
+        <Route path="/tao-bien-ban-tra-phong/:id" element={<MHTaoBienBanTraPhong />} />
+        <Route path="/xem-truoc-in/:id" element={<MHXemTruocIn />} />
       </Routes>
     </Router>
   );

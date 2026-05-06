@@ -23,8 +23,8 @@ const meLimiter = rateLimit({
 // POST /api/auth/login
 router.post('/login', authLimiter, async (req, res, next) => {
   try {
-    const { email, password } = req.body;
-    const result = await authService.login(email, password);
+    const { username, password } = req.body;
+    const result = await authService.DangNhap(username, password);
     res.json(result);
   } catch (err) {
     next(err);
@@ -74,7 +74,7 @@ router.post('/login-simple', authLimiter, async (req, res, next) => {
 // GET /api/auth/me
 router.get('/me', meLimiter, authMiddleware, async (req, res, next) => {
   try {
-    const user = await authService.getMe(req.user.id);
+    const user = await authService.LayThongTin(req.user.id);
     res.json(user);
   } catch (err) {
     next(err);
