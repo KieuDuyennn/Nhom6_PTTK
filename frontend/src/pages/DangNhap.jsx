@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { login } from '../services/auth.service';
 
 const DangNhap = () => {
   const [username, setUsername] = useState('');
@@ -8,22 +9,26 @@ const DangNhap = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    // Giả lập đăng nhập
-    setTimeout(() => {
-      if (username === 'nv_ban_hang' && password === '123456') {
-        const userData = { username, role: 'Nhân viên bán hàng', name: 'Nguyễn Văn A' };
-        localStorage.setItem('user', JSON.stringify(userData));
-        navigate('/phieu-yeu-cau');
+    try {
+      const data = await login(username, password);
+      
+      // Redirect based on role or to default page
+      if (data.user.role === 'Quản lý') {
+        navigate('/danh-sach-hop-dong');
       } else {
-        setError('Tài khoản hoặc mật khẩu không chính xác.');
+        navigate('/phieu-yeu-cau');
       }
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || 'Tài khoản hoặc mật khẩu không chính xác.');
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
   return (
@@ -49,7 +54,7 @@ const DangNhap = () => {
                   type="text"
                   required
                   className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                  placeholder="nv_ban_hang"
+                  placeholder="Username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
@@ -63,7 +68,7 @@ const DangNhap = () => {
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 </span>
                 <input
-                  type="text"
+                  type="password"
                   required
                   className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                   placeholder="••••••"
