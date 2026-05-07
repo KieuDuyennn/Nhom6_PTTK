@@ -4,20 +4,9 @@ export default function NhuCauThuePhongPanel({ formData, onChange, errors }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
     onChange(name, value);
-    
-    // Auto update HinhThucThue based on SoNguoiMuonThue
-    if (name === 'SoNguoiMuonThue') {
-      const num = parseInt(value, 10);
-      if (num === 1) {
-        onChange('HinhThucThue', 'Cá nhân');
-      } else if (num >= 2 && formData.HinhThucThue === 'Cá nhân') {
-        onChange('HinhThucThue', '');
-      }
-    }
   };
 
   const soNguoi = parseInt(formData.SoNguoiMuonThue, 10);
-  const isMotNguoi = soNguoi === 1;
 
   return (
     <div className="flex flex-col gap-6 w-full mt-6">
@@ -95,18 +84,11 @@ export default function NhuCauThuePhongPanel({ formData, onChange, errors }) {
             name="HinhThucThue"
             value={formData.HinhThucThue || ''}
             onChange={handleChange}
-            disabled={isMotNguoi}
-            className={`bg-[#fdf2f8] border ${errors?.HinhThucThue ? 'border-red-500' : 'border-[#fccee8]'} border-[0.87px] border-solid h-[49.715px] px-4 rounded-[10px] w-full font-['Inter',sans-serif] text-[#0a0a0a] text-[16px] focus:outline-none focus:ring-1 focus:ring-[#e60076] appearance-none ${isMotNguoi ? 'opacity-70 pointer-events-none' : ''}`}
+            className={`bg-[#fdf2f8] border ${errors?.HinhThucThue ? 'border-red-500' : 'border-[#fccee8]'} border-[0.87px] border-solid h-[49.715px] px-4 rounded-[10px] w-full font-['Inter',sans-serif] text-[#0a0a0a] text-[16px] focus:outline-none focus:ring-1 focus:ring-[#e60076] appearance-none`}
           >
-            {isMotNguoi ? (
-              <option value="Cá nhân">Cá nhân</option>
-            ) : (
-              <>
-                <option value="">Chọn hình thức</option>
-                <option value="Ở ghép">Ở ghép</option>
-                <option value="Thuê nguyên căn">Thuê nguyên căn</option>
-              </>
-            )}
+            <option value="">Chọn hình thức</option>
+            <option value="Ở ghép">Ở ghép</option>
+            <option value="Thuê nguyên căn">Thuê nguyên căn</option>
           </select>
           {errors?.HinhThucThue && <span className="text-red-500 text-xs">{errors.HinhThucThue}</span>}
         </div>
