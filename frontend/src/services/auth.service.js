@@ -1,14 +1,16 @@
 import api from './api';
 
-export async function login(email, password) {
-  const res = await api.post('/auth/login', { email, password });
+export async function login(username, password) {
+  const res = await api.post('/auth/login', { username, password });
   const { token, user } = res.data;
   localStorage.setItem('token', token);
-  return user;
+  localStorage.setItem('user', JSON.stringify(user));
+  return { token, user };
 }
 
 export async function logout() {
   localStorage.removeItem('token');
+  localStorage.removeItem('user');
 }
 
 export async function getCurrentUser() {

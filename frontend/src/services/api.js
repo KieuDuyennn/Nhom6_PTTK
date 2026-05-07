@@ -1,10 +1,19 @@
-import { createClient } from '@supabase/supabase-js'
+import axios from 'axios';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
-if (!supabaseUrl || !supabaseKey) {
-  console.error("❌ Thiếu thông tin cấu hình Supabase trong file .env")
-}
+// Add request interceptor for auth token if needed
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+export default api;
