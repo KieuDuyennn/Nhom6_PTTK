@@ -1,10 +1,11 @@
 const thanhToanDAO = require('../dao/thanhToan.dao');
-const hopDongDAO = require('../dao/hopDong.dao');
+const hopDongBUS = require('./hopDong.service');
+const dichVuBUS = require('./dichVu.service');
 
 class ThanhToan_BUS {
   static async LayThongTinThanhToanKyDau(maHD) {
-    // 1. Lấy thông tin hợp đồng
-    const hopDong = await hopDongDAO.docTheoMa(maHD);
+    // 1. Lấy thông tin hợp đồng qua BUS
+    const hopDong = await hopDongBUS.LayTheoMa(maHD);
     if (!hopDong) throw new Error('Không tìm thấy hợp đồng');
 
     // 2. Lấy tiền cọc đã đối soát
@@ -15,7 +16,7 @@ class ThanhToan_BUS {
     const maCN = hopDong.hop_dong_giuong?.[0]?.giuong?.phong?.macn;
     let dichVu = [];
     if (maCN) {
-      dichVu = await thanhToanDAO.layDichVuTheoMaCN(maCN);
+      dichVu = await dichVuBUS.LayTheoMaCN(maCN);
     }
 
     return {
@@ -30,8 +31,8 @@ class ThanhToan_BUS {
   }
 
   static async TaoPhieuThanhToanKyDau(maHD, maNV, maTT) {
-    // 1. Validate trạng thái hợp đồng
-    const hopDong = await hopDongDAO.docTheoMa(maHD);
+    // 1. Validate trạng thái hợp đồng qua BUS
+    const hopDong = await hopDongBUS.LayTheoMa(maHD);
     if (!hopDong) throw new Error('Không tìm thấy hợp đồng');
     if (hopDong.trangthai !== 'Đã ký xác nhận') {
       throw new Error('Hợp đồng chưa ở trạng thái Đã ký xác nhận');
@@ -42,7 +43,7 @@ class ThanhToan_BUS {
     const maCN = hopDong.hop_dong_giuong?.[0]?.giuong?.phong?.macn;
     let tongDichVu = 0;
     if (maCN) {
-      const dichVu = await thanhToanDAO.layDichVuTheoMaCN(maCN);
+      const dichVu = await dichVuBUS.LayTheoMaCN(maCN);
       tongDichVu = dichVu.reduce((sum, dv) => sum + Number(dv.gia), 0);
     }
 
@@ -62,8 +63,8 @@ class ThanhToan_BUS {
 
     const createdTT = await thanhToanDAO.them(newTT);
 
-    // 4. Cập nhật trạng thái hợp đồng
-    await hopDongDAO.capNhatTrangThai(maHD, 'Chờ thanh toán đầu kỳ');
+    // 4. Cập nhật trạng thái hợp đồng qua BUS
+    await hopDongBUS.CapNhatTrangThai(maHD, 'Chờ thanh toán đầu kỳ');
 
     return createdTT;
   }

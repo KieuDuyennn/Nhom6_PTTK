@@ -52,25 +52,8 @@ async function layCocDaDoiSoat(maHD) {
   return data ? data.sotien : 0;
 }
 
-async function layDichVuTheoMaCN(maCN) {
-  const { data, error } = await supabase
-    .from('chi_nhanh_dich_vu')
-    .select(`
-      dich_vu (
-        madv,
-        tendv,
-        gia
-      )
-    `)
-    .eq('macn', maCN);
-
-  if (error) throw error;
-  return data.map(item => item.dich_vu);
-}
-
 module.exports = {
   them,
   sinhMaThanhToan,
-  layCocDaDoiSoat,
-  layDichVuTheoMaCN
+  layCocDaDoiSoat
 };

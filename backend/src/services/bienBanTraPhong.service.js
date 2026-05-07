@@ -1,13 +1,13 @@
 const bienBanTraPhongDAO = require('../dao/bienBanTraPhong.dao');
-const hopDongDAO = require('../dao/hopDong.dao');
+const hopDongBUS = require('./hopDong.service');
 const BangDoiSoat_BUS = require('./bangDoiSoat.service');
 const BienBanBanGiao_BUS = require('./bienBanBanGiao.service');
 const BaoCao_BUS = require('./baoCaoTinhTrangPhong.service');
 
 class BienBanTraPhong_BUS {
   static async Tao(maHD, maNV) {
-    // 1. Validate contract status
-    const hopDong = await hopDongDAO.docTheoMa(maHD);
+    // 1. Validate contract status via BUS
+    const hopDong = await hopDongBUS.LayTheoMa(maHD);
     if (!hopDong) throw new Error('Không tìm thấy hợp đồng');
     
     if (hopDong.trangthai !== 'Đã đối soát') {
@@ -28,8 +28,8 @@ class BienBanTraPhong_BUS {
 
     const createdReport = await bienBanTraPhongDAO.them(newBB);
 
-    // 4. Update contract status to 'Chờ ký biên bản trả phòng'
-    await hopDongDAO.capNhatTrangThai(maHD, 'Chờ ký biên bản trả phòng');
+    // 4. Update contract status via BUS
+    await hopDongBUS.CapNhatTrangThai(maHD, 'Chờ ký biên bản trả phòng');
 
     return createdReport;
   }
