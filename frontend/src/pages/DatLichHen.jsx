@@ -29,6 +29,7 @@ function formatNgay(year, month, day) {
 export default function DatLichHen() {
   const navigate = useNavigate();
   const selectedRooms = JSON.parse(sessionStorage.getItem('selectedRooms') || '[]');
+  const editLichHenMode = sessionStorage.getItem('editLichHenMode') === 'true';
 
   // Lấy manv từ localStorage (user đang đăng nhập)
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
@@ -92,35 +93,81 @@ export default function DatLichHen() {
     setIsSubmitting(true);
 
     try {
-      // Lấy maYC của phiếu vừa tạo (lưu trong sessionStorage)
-      const maYC = sessionStorage.getItem('currentMaYC');
+      let maYC = sessionStorage.getItem('currentMaYC');
 
-      if (maYC) {
-        // Build ISO timestamp từ ngày + slot
-        const gioMap = {
-          '09:00 - 10:00': '02:00:00',
-          '10:00 - 11:00': '03:00:00',
-          '11:00 - 12:00': '04:00:00',
-          '14:00 - 15:00': '07:00:00',
-          '15:00 - 16:00': '08:00:00',
-          '16:00 - 17:00': '09:00:00',
+      // Nếu chưa có maYC, phải tạo phiếu yêu cầu trước
+      if (!maYC) {
+        const formDataStr = sessionStorage.getItem('formDataYeuCau');
+        if (!formDataStr) {
+          alert('Dữ liệu form không tìm thấy. Vui lòng quay lại và điền lại thông tin.');
+          setIsSubmitting(false);
+          return;
+        }
+        
+        const formData = JSON.parse(formDataStr);
+        const chiTiet = selectedRooms.map(r => ({
+          maphong: r.maphong || null,
+          macn: r.macn || null,
+          magiuong: r.magiuong || null,
+        }));
+
+        console.log('=== Tạo phiếu từ DatLichHen ===');
+        console.log('FormData:', formData);
+        console.log('ChiTiet:', chiTiet);
+
+        // Create phieu với formData + ChiTiet
+        const payload = {
+          ...formData,
+          MaNV: currentUser.manv || null,
+          ChiTiet: chiTiet,
         };
-        const ngayStr = formatNgay(currentYear, currentMonth, selectedDay);
-        const gioStr = gioMap[selectedSlot] || '02:00:00';
-        const thoigianhenxem = `${ngayStr}T${gioStr}`;
 
-        await fetch('http://localhost:3001/api/phieu-yeu-cau/cap-nhat-lich-hen', {
-          method: 'PATCH',
+        const createRes = await fetch('http://localhost:3001/api/phieu-yeu-cau/dang-ky', {
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mayc: maYC, thoigianhenxem }),
-        });
+          body: JSON.stringify(payload),
+        }).then(r => r.json());
+
+        if (!createRes.success || !createRes.data?.MaYC) {
+          alert('Lỗi tạo phiếu: ' + (createRes.message || 'Không rõ lý do'));
+          setIsSubmitting(false);
+          return;
+        }
+
+        maYC = createRes.data.MaYC;
+        sessionStorage.setItem('currentMaYC', maYC);
+        console.log('Phiếu tạo thành công! MaYC:', maYC);
       }
+
+      // Cập nhật lịch hẹn với thời gian
+      const gioMap = {
+        '09:00 - 10:00': '02:00:00',
+        '10:00 - 11:00': '03:00:00',
+        '11:00 - 12:00': '04:00:00',
+        '14:00 - 15:00': '07:00:00',
+        '15:00 - 16:00': '08:00:00',
+        '16:00 - 17:00': '09:00:00',
+      };
+      const ngayStr = formatNgay(currentYear, currentMonth, selectedDay);
+      const gioStr = gioMap[selectedSlot] || '02:00:00';
+      const thoigianhenxem = `${ngayStr}T${gioStr}`;
+
+      await fetch('http://localhost:3001/api/phieu-yeu-cau/cap-nhat-lich-hen', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mayc: maYC, thoigianhenxem }),
+      });
 
       sessionStorage.removeItem('selectedRooms');
       sessionStorage.removeItem('currentMaYC');
-      navigate('/phieu-yeu-cau');
+      sessionStorage.removeItem('formDataYeuCau');
+      sessionStorage.removeItem('editLichHenMode');
+      
+      console.log('[DatLichHen] Lịch hẹn tạo/cập nhật thành công! Redirect tới Chi tiết:', maYC);
+      navigate(`/lich-hen/${maYC}`);
     } catch (err) {
       console.error('Lỗi lưu lịch hẹn:', err);
+      alert('Lỗi: ' + err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -314,7 +361,7 @@ export default function DatLichHen() {
             disabled={isSubmitting || !selectedDay || !selectedSlot}
             className="w-full bg-gradient-to-r from-[#e60076] to-[#ec003f] text-white font-['Inter',sans-serif] font-bold text-[16px] py-4 rounded-[12px] hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            {isSubmitting ? 'Đang lưu...' : 'Lưu lịch hẹn'}
+            {isSubmitting ? 'Đang lưu...' : (editLichHenMode ? 'Lưu thay đổi' : 'Lưu lịch hẹn')}
           </button>
           <p className="font-['Inter',sans-serif] text-[#9ca3af] text-[12px] mt-3">
             Bằng cách nhấn nút trên, bạn xác nhận sẽ đến xem phòng theo lịch đã chọn.

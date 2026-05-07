@@ -3,7 +3,6 @@ import MainLayout from '../components/MainLayout';
 import ThongTinCaNhanPanel from '../components/ThongTinCaNhanPanel';
 import NhuCauThuePhongPanel from '../components/NhuCauThuePhongPanel';
 import { useNavigate } from 'react-router-dom';
-import { phieuYeuCauService } from '../services/phieuYeuCauService';
 import ModalLoi from '../components/ModalLoi';
 
 export default function DangKyThuePhong() {
@@ -66,28 +65,21 @@ export default function DangKyThuePhong() {
     
     try {
       setIsSubmitting(true);
-      // Lấy manv của nhân viên đang đăng nhập
-      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-      const payload = { ...formData, MaNV: currentUser.manv || null };
+      // Lưu formData vào sessionStorage để sử dụng sau khi chọn phòng
+      sessionStorage.setItem('formDataYeuCau', JSON.stringify(formData));
+      
+      // Xóa các dữ liệu cũ
+      sessionStorage.removeItem('selectedRooms');
+      sessionStorage.removeItem('currentMaYC');
 
-      const res = await phieuYeuCauService.taoPhieuYeuCau(payload);
-      if (res.success) {
-        // Lưu maYC để trang đặt lịch dùng khi update thoigianhenxem
-        sessionStorage.setItem('currentMaYC', res.data.MaYC);
-
-        const params = new URLSearchParams({
-          maYC: res.data.MaYC,
-          hinhThucThue: formData.HinhThucThue || '',
-          soNguoi: formData.SoNguoiMuonThue || '1',
-          mucGia: formData.MucGia || '0',
-          chiNhanh: formData.ChiNhanh || '',
-          gioiTinh: formData.GioiTinh || '',
-        });
-        navigate(`/ket-qua-tim-kiem?${params.toString()}`);
-
-      } else {
-        setModalLoi({ isOpen: true, message: res.message || 'Hệ thống bị lỗi xin vui lòng thử lại hoặc liên hệ với hỗ trợ kỹ thuật của chúng tôi.' });
-      }
+      const params = new URLSearchParams({
+        hinhThucThue: formData.HinhThucThue || '',
+        soNguoi: formData.SoNguoiMuonThue || '1',
+        mucGia: formData.MucGia || '0',
+        chiNhanh: formData.ChiNhanh || '',
+        gioiTinh: formData.GioiTinh || '',
+      });
+      navigate(`/ket-qua-tim-kiem?${params.toString()}`);
     } catch (error) {
       console.error(error);
       setModalLoi({ isOpen: true, message: 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại đường truyền hoặc thử lại sau.' });

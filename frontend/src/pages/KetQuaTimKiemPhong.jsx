@@ -53,10 +53,12 @@ export default function KetQuaTimKiemPhong() {
   ];
 
   // Transform dữ liệu từ API thành format của RoomCard
+  // Mỗi item bao gồm: UI display fields + original data fields để lưu vào sessionStorage
   const transformData = (apiData, loai) => {
     if (loai === 'ca-nhan') {
       // apiData là mảng giường
       return apiData.map((g, i) => ({
+        // UI display fields
         id: `${g.maphong}-${g.magiuong}`,
         badge: 'CÒN TRỐNG',
         title: `Giường ${g.magiuong} - Phòng ${g.maphong}`,
@@ -65,12 +67,17 @@ export default function KetQuaTimKiemPhong() {
         peopleCount: `1 giường • ${g.phong?.gioitinh || 'Hỗn hợp'}`,
         price: (g.giagiuong || 0).toLocaleString('vi-VN'),
         image: ROOM_IMAGES[i % ROOM_IMAGES.length],
+        // Original data for ChiTiet storage
+        maphong: g.maphong,
+        macn: g.phong?.macn || '',
+        magiuong: g.magiuong,
       }));
     }
 
     if (loai === 'nguyen-can') {
       // apiData là mảng phòng nguyên căn
       return apiData.map((p, i) => ({
+        // UI display fields
         id: p.maphong,
         badge: 'CHO THUÊ NGUYÊN CĂN',
         title: `Phòng ${p.maphong}`,
@@ -79,6 +86,11 @@ export default function KetQuaTimKiemPhong() {
         peopleCount: `${p.soluonggiuong || 1} giường • ${p.gioitinh || 'Hỗn hợp'}`,
         price: (p.tienthuethang || 0).toLocaleString('vi-VN'),
         image: ROOM_IMAGES[i % ROOM_IMAGES.length],
+        // Original data for ChiTiet storage
+        maphong: p.maphong,
+        macn: p.macn || '',
+        // Cho nguyên căn, không có magiuong (null)
+        magiuong: null,
       }));
     }
 
@@ -87,6 +99,7 @@ export default function KetQuaTimKiemPhong() {
       return apiData.map((p, i) => {
         const giuongTrong = (p.giuong || []).filter(g => g.tinhtrang === 'Chưa sử dụng');
         return {
+          // UI display fields
           id: p.maphong,
           badge: `CÒN TRỐNG ${giuongTrong.length} CHỖ`,
           title: `Phòng ${p.maphong}`,
@@ -95,6 +108,11 @@ export default function KetQuaTimKiemPhong() {
           peopleCount: `Giường trống: ${giuongTrong.map(g => g.magiuong).join(', ')}`,
           price: (p.tienthuethang || 0).toLocaleString('vi-VN'),
           image: ROOM_IMAGES[i % ROOM_IMAGES.length],
+          // Original data for ChiTiet storage
+          maphong: p.maphong,
+          macn: p.macn || '',
+          // Cho ở ghép, có thể có nhiều giường - chọn cái đầu tiên (hoặc toàn bộ)
+          magiuong: giuongTrong.length > 0 ? giuongTrong[0].magiuong : null,
         };
       });
     }
