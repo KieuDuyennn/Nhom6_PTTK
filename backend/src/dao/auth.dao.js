@@ -1,23 +1,48 @@
 const supabase = require('../config/supabase');
 
-async function findByEmail(email) {
+async function timTheoTenDangNhap(username) {
   const { data, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('email', email)
+    .from('tai_khoan')
+    .select(`
+      madangnhap,
+      matkhau,
+      manv,
+      nhan_vien (
+        hoten,
+        loainv,
+        email
+      )
+    `)
+    .eq('madangnhap', username)
     .single();
-  if (error) return null;
+
+  if (error) {
+    console.error('Error finding user by username:', error);
+    return null;
+  }
   return data;
 }
 
-async function findById(id) {
+async function docTheoMa(maDangNhap) {
   const { data, error } = await supabase
-    .from('users')
-    .select('id, email, role, fullName')
-    .eq('id', id)
+    .from('tai_khoan')
+    .select(`
+      madangnhap,
+      manv,
+      nhan_vien (
+        hoten,
+        loainv,
+        email
+      )
+    `)
+    .eq('madangnhap', maDangNhap)
     .single();
-  if (error) return null;
+
+  if (error) {
+    console.error('Error finding user by id:', error);
+    return null;
+  }
   return data;
 }
 
-module.exports = { findByEmail, findById };
+module.exports = { timTheoTenDangNhap, docTheoMa };
