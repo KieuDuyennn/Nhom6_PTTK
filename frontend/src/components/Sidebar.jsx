@@ -9,6 +9,7 @@ const Sidebar = () => {
     { id: 'dang-ky-thue-phong', label: 'Tiếp nhận phiếu yêu cầu', icon: '📝', path: '/dang-ky-thue-phong' },
     { id: 'phieu-yeu-cau', label: 'PYC Xem phòng', icon: '📋', path: '/phieu-yeu-cau' },
     { id: 'thanh-toan', label: 'Thanh toán cọc', icon: '$', path: '/thanh-toan' },
+    { id: 'thanh-toan-dau-ky', label: 'Thanh toán đầu kỳ', icon: '💳', path: '/thanh-toan-dau-ky' },
     { id: 'tra-phong', label: 'Trả phòng', icon: '🚪', path: '/danh-sach-hop-dong' },
   ];
 
@@ -30,7 +31,9 @@ const Sidebar = () => {
       {/* Menu */}
       <nav className="flex-1 px-4 space-y-1">
         {menuItems.map((item) => {
-          const isActive = location.pathname.startsWith(item.path);
+          const isActive = item.path === '/danh-sach-hop-dong' 
+            ? location.pathname === '/danh-sach-hop-dong' 
+            : location.pathname === item.path || location.pathname.startsWith(item.path + '/');
           return (
             <button
               key={item.id}

@@ -29,6 +29,21 @@ async function layDanhSachTheoTrangThai(tt) {
 }
 
 async function timKiem(keyword, tt) {
+  let matchedMaKHs = [];
+  
+  if (keyword) {
+    // 1. Search for customers matching the keyword
+    const { data: customers } = await supabase
+      .from('khach_hang')
+      .select('makh')
+      .or(`hoten.ilike.%${keyword}%,sdt.ilike.%${keyword}%`);
+    
+    if (customers) {
+      matchedMaKHs = customers.map(c => c.makh);
+    }
+  }
+
+  // 2. Query contracts with matching MaHD or matching MaKH
   let query = supabase
     .from('hop_dong')
     .select(`
@@ -52,7 +67,11 @@ async function timKiem(keyword, tt) {
     .eq('trangthai', tt);
 
   if (keyword) {
-    query = query.or(`mahd.ilike.%${keyword}%`);
+    if (matchedMaKHs.length > 0) {
+      query = query.or(`mahd.ilike.%${keyword}%,makh.in.(${matchedMaKHs.join(',')})`);
+    } else {
+      query = query.ilike('mahd', `%${keyword}%`);
+    }
   }
 
   const { data, error } = await query.order('ngaybatdau', { ascending: false });

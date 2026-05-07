@@ -9,6 +9,7 @@ import DanhSachPhongChon from './pages/DanhSachPhongChon';
 import DatLichHen from './pages/DatLichHen';
 import MHDanhSachHopDong from './pages/MHDanhSachHopDong';
 import MHTaoBienBanTraPhong from './pages/MHTaoBienBanTraPhong';
+import MHLapYeuCauThanhToan from './pages/MHLapYeuCauThanhToan';
 import MHXemTruocIn from './pages/MHXemTruocIn';
 
 function App() {
@@ -24,7 +25,9 @@ function App() {
         <Route path="/phieu-yeu-cau/:id" element={<ChiTietPYCXemPhong />} />
         <Route path="/ghi-nhan-xac-nhan-thue/:id" element={<GhiNhanXacNhanThue />} />
         <Route path="/danh-sach-hop-dong" element={<MHDanhSachHopDong />} />
+        <Route path="/thanh-toan-dau-ky" element={<MHDanhSachHopDong />} />
         <Route path="/tao-bien-ban-tra-phong/:id" element={<MHTaoBienBanTraPhong />} />
+        <Route path="/lap-yeu-cau-thanh-toan/:id" element={<MHLapYeuCauThanhToan />} />
         <Route path="/xem-truoc-in/:id" element={<MHXemTruocIn />} />
       </Routes>
     </Router>

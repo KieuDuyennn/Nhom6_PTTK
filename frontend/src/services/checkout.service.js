@@ -29,3 +29,4 @@ export const getReportDetails = async (id) => {
   const response = await api.get(`/checkout/reports/${id}`);
   return response.data;
 };
+

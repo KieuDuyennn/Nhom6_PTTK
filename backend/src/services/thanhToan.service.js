@@ -1,21 +1,72 @@
-const thanhToanDao = require('../dao/thanhToan.dao');
+const thanhToanDAO = require('../dao/thanhToan.dao');
+const hopDongDAO = require('../dao/hopDong.dao');
 
-async function getAll() {
-  return thanhToanDao.findAll();
+class ThanhToan_BUS {
+  static async LayThongTinThanhToanKyDau(maHD) {
+    // 1. Lấy thông tin hợp đồng
+    const hopDong = await hopDongDAO.docTheoMa(maHD);
+    if (!hopDong) throw new Error('Không tìm thấy hợp đồng');
+
+    // 2. Lấy tiền cọc đã đối soát
+    const tienCoc = await thanhToanDAO.layCocDaDoiSoat(maHD);
+
+    // 3. Lấy thông tin chi nhánh để lấy dịch vụ
+    // Giả sử lấy MaCN từ phòng đầu tiên trong hợp đồng
+    const maCN = hopDong.hop_dong_giuong?.[0]?.giuong?.phong?.macn;
+    let dichVu = [];
+    if (maCN) {
+      dichVu = await thanhToanDAO.layDichVuTheoMaCN(maCN);
+    }
+
+    return {
+      hopDong,
+      tienCoc,
+      dichVu
+    };
+  }
+
+  static async TaoMa() {
+    return await thanhToanDAO.sinhMaThanhToan();
+  }
+
+  static async TaoPhieuThanhToanKyDau(maHD, maNV, maTT) {
+    // 1. Validate trạng thái hợp đồng
+    const hopDong = await hopDongDAO.docTheoMa(maHD);
+    if (!hopDong) throw new Error('Không tìm thấy hợp đồng');
+    if (hopDong.trangthai !== 'Đã ký xác nhận') {
+      throw new Error('Hợp đồng chưa ở trạng thái Đã ký xác nhận');
+    }
+
+    // 2. Tính toán tổng tiền
+    const tienCoc = await thanhToanDAO.layCocDaDoiSoat(maHD);
+    const maCN = hopDong.hop_dong_giuong?.[0]?.giuong?.phong?.macn;
+    let tongDichVu = 0;
+    if (maCN) {
+      const dichVu = await thanhToanDAO.layDichVuTheoMaCN(maCN);
+      tongDichVu = dichVu.reduce((sum, dv) => sum + Number(dv.gia), 0);
+    }
+
+    const tongTien = Number(tienCoc) + tongDichVu;
+
+    // 3. Tạo đối tượng thanh toán với mã đã truyền vào
+    const newTT = {
+      matt: maTT,
+      loaitt: 'Thanh toán kỳ đầu',
+      sotien: tongTien,
+      thoidiemyeucau: new Date().toISOString(),
+      trangthai: 'Chờ thanh toán',
+      mahd: maHD,
+      makh: hopDong.makh,
+      manvkt: maNV // Nhân viên kế toán lập phiếu
+    };
+
+    const createdTT = await thanhToanDAO.them(newTT);
+
+    // 4. Cập nhật trạng thái hợp đồng
+    await hopDongDAO.capNhatTrangThai(maHD, 'Chờ thanh toán đầu kỳ');
+
+    return createdTT;
+  }
 }
 
-async function getById(id) {
-  const item = await thanhToanDao.findById(id);
-  if (!item) throw Object.assign(new Error('Not found'), { status: 404 });
-  return item;
-}
-
-async function ghiNhanMinhChung(id, data) {
-  return thanhToanDao.updateMinhChung(id, data);
-}
-
-async function pheDuyetGiaoDich(id, approvedBy) {
-  return thanhToanDao.approve(id, approvedBy);
-}
-
-module.exports = { getAll, getById, ghiNhanMinhChung, pheDuyetGiaoDich };
+module.exports = ThanhToan_BUS;

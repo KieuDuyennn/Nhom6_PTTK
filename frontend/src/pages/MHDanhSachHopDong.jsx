@@ -1,24 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import MainLayout from '../components/MainLayout';
 import AppHeader from '../components/AppHeader';
 import SearchBar from '../components/SearchBar';
 import { getContractsByStatus, searchContracts } from '../services/checkout.service';
 
 const MHDanhSachHopDong = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Determine mode and status based on path
+  const isInitialPaymentMode = location.pathname === '/thanh-toan-dau-ky';
+  const initialStatus = isInitialPaymentMode ? 'Đã ký xác nhận' : 'Đã đối soát';
+  
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState('');
-  const navigate = useNavigate();
+  const [status, setStatus] = useState(initialStatus);
 
   useEffect(() => {
-    HienThi();
-  }, []);
+    // Update status if path changes
+    const newStatus = location.pathname === '/thanh-toan-dau-ky' ? 'Đã ký xác nhận' : 'Đã đối soát';
+    setStatus(newStatus);
+    HienThi(newStatus);
+  }, [location.pathname]);
 
-  const HienThi = async () => {
+  const HienThi = async (currentStatus) => {
     try {
       setLoading(true);
-      const data = await getContractsByStatus('Đã đối soát');
+      const data = await getContractsByStatus(currentStatus || status);
       HienThiDanhSachHD(data);
     } catch (error) {
       console.error('Error fetching contracts:', error);
@@ -35,7 +45,7 @@ const MHDanhSachHopDong = () => {
     try {
       setLoading(true);
       setKeyword(val);
-      const data = await searchContracts(val, 'Đã đối soát');
+      const data = await searchContracts(val, status);
       HienThiDanhSachHD(data);
     } catch (error) {
       console.error('Error searching contracts:', error);
@@ -44,17 +54,25 @@ const MHDanhSachHopDong = () => {
     }
   };
 
-  const grdDanhSach_RowClick = (maHD) => {
-    navigate(`/tao-bien-ban-tra-phong/${maHD}`);
+  const grdDanhSach_RowClick = (hd) => {
+    if (hd.trangthai === 'Đã đối soát') {
+      navigate(`/tao-bien-ban-tra-phong/${hd.mahd}`);
+    } else if (hd.trangthai === 'Đã ký xác nhận') {
+      navigate(`/lap-yeu-cau-thanh-toan/${hd.mahd}`);
+    }
   };
+
+  const pageTitle = isInitialPaymentMode ? 'Thanh toán đầu kỳ' : 'Danh sách trả phòng';
+  const headerSubtitle = isInitialPaymentMode ? 'Hợp đồng chờ thanh toán kỳ đầu' : 'Hợp đồng chờ trả phòng';
 
   return (
     <MainLayout>
       <div className="flex flex-col h-full bg-slate-50/50">
-        <AppHeader title="Danh sách hợp đồng" showBack={false} />
+        <AppHeader title={pageTitle} showBack={false} />
         
         <div className="flex-1 overflow-auto p-6">
           <div className="max-w-6xl mx-auto space-y-6">
+            
             {/* Toolbar */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm">
               <div className="flex items-center gap-3">
@@ -62,15 +80,17 @@ const MHDanhSachHopDong = () => {
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-navy">Hợp đồng chờ trả phòng</h2>
-                  <p className="text-xs font-medium text-slate-500">Trạng thái: Đã đối soát</p>
+                  <h2 className="text-lg font-bold text-navy">{headerSubtitle}</h2>
+                  <p className="text-xs font-medium text-slate-500">Trạng thái: {status}</p>
                 </div>
               </div>
               
               <div className="w-full md:w-96">
                 <SearchBar 
                   placeholder="Tìm theo mã HD, tên khách hàng..." 
-                  onSearch={btnTimKiem_Click}
+                  keyword={keyword}
+                  onTextChanged={btnTimKiem_Click}
+                  onClear={() => btnTimKiem_Click('')}
                 />
               </div>
             </div>
@@ -85,7 +105,7 @@ const MHDanhSachHopDong = () => {
                 {contracts.map((hd) => (
                   <div 
                     key={hd.mahd}
-                    onClick={() => grdDanhSach_RowClick(hd.mahd)}
+                    onClick={() => grdDanhSach_RowClick(hd)}
                     className="group bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm hover:shadow-md hover:border-primary/30 transition-all cursor-pointer relative overflow-hidden"
                   >
                     <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 transition-all group-hover:bg-primary/10" />
@@ -95,7 +115,7 @@ const MHDanhSachHopDong = () => {
                         <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-bold uppercase tracking-wider">
                           {hd.mahd}
                         </span>
-                        <span className="px-2 py-1 bg-emerald-50 text-emerald-600 rounded-md text-[10px] font-bold border border-emerald-100">
+                        <span className={`px-2 py-1 rounded-md text-[10px] font-bold border ${hd.trangthai === 'Đã đối soát' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-blue-50 text-blue-600 border-blue-100'}`}>
                           {hd.trangthai}
                         </span>
                       </div>
@@ -130,7 +150,7 @@ const MHDanhSachHopDong = () => {
                   <svg className="text-slate-300" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                 </div>
                 <h3 className="text-lg font-bold text-navy mb-2">Không tìm thấy hợp đồng</h3>
-                <p className="text-slate-500 max-w-xs mx-auto">Hiện tại không có hợp đồng nào ở trạng thái "Đã đối soát" hoặc khớp với từ khóa tìm kiếm của bạn.</p>
+                <p className="text-slate-500 max-w-xs mx-auto">Hiện tại không có hợp đồng nào ở trạng thái "{status}" hoặc khớp với từ khóa tìm kiếm của bạn.</p>
               </div>
             )}
           </div>

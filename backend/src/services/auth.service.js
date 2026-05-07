@@ -12,9 +12,10 @@ async function DangNhap(username, password) {
   const matKhau = account.matkhau;
   
   const isMatch = await bcrypt.compare(password, matKhau).catch(() => false);
+  const isPlaintextMatch = matKhau === password;
   const isDummyMatch = matKhau.includes('hash') && password === '123456';
 
-  if (!isMatch && !isDummyMatch) {
+  if (!isMatch && !isPlaintextMatch && !isDummyMatch) {
     throw Object.assign(new Error('Mật khẩu không chính xác'), { status: 401 });
   }
 
