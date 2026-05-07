@@ -7,6 +7,7 @@ const Sidebar = () => {
 
   const menuItems = [
     { id: 'dang-ky-thue-phong', label: 'Tiếp nhận phiếu yêu cầu', icon: '📝', path: '/dang-ky-thue-phong' },
+    { id: 'lich-hen', label: 'Lịch hẹn', icon: '📅', path: '/lich-hen' },
     { id: 'phieu-yeu-cau', label: 'PYC Xem phòng', icon: '📋', path: '/phieu-yeu-cau' },
     { id: 'thanh-toan', label: 'Thanh toán cọc', icon: '$', path: '/thanh-toan' },
     { id: 'thanh-toan-dau-ky', label: 'Thanh toán đầu kỳ', icon: '💳', path: '/thanh-toan-dau-ky' },
