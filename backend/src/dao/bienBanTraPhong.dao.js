@@ -11,22 +11,6 @@ async function them(bb) {
   return data;
 }
 
-async function sinhMaBienBanTraPhong() {
-  const { data, error } = await supabase
-    .from('bien_ban_tra_phong')
-    .select('mabienbantp')
-    .order('mabienbantp', { ascending: false })
-    .limit(1);
-
-  if (error) throw error;
-
-  if (data.length === 0) return 'BBTP001';
-
-  const lastMa = data[0].mabienbantp;
-  const lastNumber = parseInt(lastMa.replace('BBTP', ''));
-  const nextNumber = lastNumber + 1;
-  return `BBTP${nextNumber.toString().padStart(3, '0')}`;
-}
 
 async function docTheoMa(maBB) {
   const { data, error } = await supabase
@@ -66,7 +50,6 @@ async function capNhatTrangThai(maBBTP, tt) {
 
 module.exports = {
   them,
-  sinhMaBienBanTraPhong,
   docTheoMa,
   capNhatTrangThai
 };
