@@ -3,11 +3,10 @@ const hopDongBUS = require('./hopDong.service');
 const dichVuBUS = require('./dichVu.service');
 
 function tinhTongGiaGiuong(hopDong) {
-  const phong = hopDong?.hop_dong_giuong?.[0]?.giuong?.phong;
-  const soLuongGiuong = Number(phong?.soluonggiuong) || Number(hopDong?.soluonggiuong) || hopDong?.hop_dong_giuong?.length || 0;
-  const tienThueThang = Number(phong?.tienthuethang) || 0;
+ 
+  const tienThueThang = Number(hopDong?.giathue) || 0;
 
-  return soLuongGiuong * tienThueThang;
+  return tienThueThang;
 }
 
 class ThanhToan_BUS {
@@ -16,7 +15,7 @@ class ThanhToan_BUS {
     const hopDong = await hopDongBUS.LayTheoMa(maHD);
     if (!hopDong) throw new Error('Không tìm thấy hợp đồng');
 
-    // 2. Tính tổng giá giường thuê = số lượng giường * tiền thuê tháng của phòng
+    // 2. Tính tổng giá giường = tiền thuê hợp đồng
     const tongGiaGiuong = tinhTongGiaGiuong(hopDong);
 
     // 3. Lấy thông tin chi nhánh để lấy dịch vụ
