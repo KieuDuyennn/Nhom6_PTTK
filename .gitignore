@@ -2,3 +2,7 @@ node_modules
 .env
 dist
 .DS_Store
+PROMPT_BACKEND_v3.md
+docs
+KIs.md
+.env.local
