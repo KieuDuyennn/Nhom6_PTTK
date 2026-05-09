@@ -17,6 +17,7 @@ async function docTheoMa(maBB) {
     .from('bien_ban_tra_phong')
     .select(`
       *,
+      nhan_vien (*), 
       hop_dong (
         *,
         khach_hang (*),

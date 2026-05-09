@@ -788,3 +788,38 @@ UNION ALL SELECT 'BANG_DOI_SOAT',        COUNT(*) FROM BANG_DOI_SOAT
 UNION ALL SELECT 'KHOAN_KHAU_TRU',       COUNT(*) FROM KHOAN_KHAU_TRU
 UNION ALL SELECT 'CHI_TIET_BAN_GIAO',    COUNT(*) FROM CHI_TIET_BAN_GIAO
 ORDER BY bang;
+
+
+-- =========================================================
+-- SEQUENCE
+-- =========================================================
+
+CREATE SEQUENCE IF NOT EXISTS bien_ban_tra_phong_seq
+START 1;
+
+-- =========================================================
+-- FUNCTION SINH MÃ
+-- =========================================================
+
+CREATE OR REPLACE FUNCTION fn_tao_mabienbantp()
+RETURNS TRIGGER
+AS $$
+BEGIN
+    IF NEW.mabienbantp IS NULL THEN
+        NEW.mabienbantp :=
+            'BBTP' ||
+            LPAD(nextval('bien_ban_tra_phong_seq')::TEXT, 4, '0');
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- =========================================================
+-- TRIGGER
+-- =========================================================
+
+CREATE TRIGGER trg_tao_mabienbantp
+BEFORE INSERT ON bien_ban_tra_phong
+FOR EACH ROW
+EXECUTE FUNCTION fn_tao_mabienbantp();
