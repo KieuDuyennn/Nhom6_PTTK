@@ -145,7 +145,7 @@ class phieuYeuCauDao {
     let query = supabase
       .from('phieu_yeu_cau_xem_phong')
       .select(`
-        mayc, soluongdukien, loaiphong, mucgia,
+        mayc, soluongdukien, loaihinhthue, mucgia,
         thoigiandukienvao, thoihanthue, thoigianhenxem,
         gioitinh, ngayguiyeucau, trangthai, loaihinhthue,
         manv, makh,
@@ -155,6 +155,9 @@ class phieuYeuCauDao {
 
     if (trangthai) {
       query = query.eq('trangthai', trangthai);
+    } else {
+      // Mặc định không load các phiếu đang trong quá trình hẹn xem (chưa hoàn thành xem phòng)
+      query = query.not('trangthai', 'eq', 'Đang hẹn xem');
     }
 
     const { data, error } = await query;
@@ -182,7 +185,7 @@ class phieuYeuCauDao {
       .from('phieu_yeu_cau_xem_phong')
       .select(`
         mayc, trangthai, thoigiandukienvao, thoihanthue,
-        loaihinhthue, loaiphong, lydohuy, ngayguiyeucau,
+        loaihinhthue, lydohuy, ngayguiyeucau,
         khach_hang (makh, hoten, sdt, loaikhachhang)
       `)
       .eq('trangthai', 'Cần xác nhận')
