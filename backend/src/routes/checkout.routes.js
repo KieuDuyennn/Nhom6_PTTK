@@ -6,6 +6,8 @@ const BangDoiSoat_BUS = require('../services/bangDoiSoat.service');
 const BienBanBanGiao_BUS = require('../services/bienBanBanGiao.service');
 const BaoCao_BUS = require('../services/baoCaoTinhTrangPhong.service');
 const LichTraPhong_BUS = require('../services/lichTraPhong.service');
+const authService = require('../services/auth.service');
+const authMiddleware = require('../middlewares/auth.middleware');
 
 // Contract routes - Direct BUS mapping
 router.get('/contracts', async (req, res, next) => {
@@ -43,17 +45,26 @@ router.get('/contracts/:id', async (req, res, next) => {
 });
 
 // Checkout report routes - Direct BUS mapping
-router.post('/return-schedules', async (req, res) => {
+router.post('/return-schedules', authMiddleware, async (req, res) => {
   try {
-    const { maHD, ngay, gio, maNV } = req.body;
+    const { maHD, ngay, gio } = req.body;
+    let maNV = req.user?.maNV;
 
-    const result =
-      await LichTraPhong_BUS.DangKyLichTraPhong(
-        maHD,
-        ngay,
-        gio,
-        maNV || 'NV02'
-      );
+    if (!maNV && req.user?.id) {
+      const currentUser = await authService.LayThongTin(req.user.id);
+      maNV = currentUser?.maNV;
+    }
+
+    if (!maNV) {
+      throw new Error('Không xác định được mã nhân viên đăng nhập');
+    }
+
+    const result = await LichTraPhong_BUS.DangKyLichTraPhong(
+      maHD,
+      ngay,
+      gio,
+      maNV
+    );
 
     res.status(201).json(result);
 
