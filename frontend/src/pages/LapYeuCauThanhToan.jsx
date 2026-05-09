@@ -14,6 +14,7 @@ const LapYeuCauThanhToan = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [errorContext, setErrorContext] = useState('');
   const [paymentId, setPaymentId] = useState('');
 
   useEffect(() => {
@@ -33,6 +34,7 @@ const LapYeuCauThanhToan = () => {
     } catch (error) {
       console.error('Error loading data:', error);
       setErrorMessage('Không thể tải thông tin hợp đồng.');
+      setErrorContext('load');
       setShowError(true);
     } finally {
       setLoading(false);
@@ -41,6 +43,7 @@ const LapYeuCauThanhToan = () => {
 
   const btnXacNhan_Click = async () => {
     try {
+      setShowError(false);
       setSubmitting(true);
       const user = JSON.parse(localStorage.getItem('user'));
       await createInitialPayment({ 
@@ -50,11 +53,23 @@ const LapYeuCauThanhToan = () => {
       });
       setShowSuccess(true);
     } catch (error) {
-      setErrorMessage(error.response?.data?.message || error.message || 'Có lỗi xảy ra khi tạo yêu cầu thanh toán.');
+      console.error('Error creating initial payment:', error);
+      setErrorMessage('Tạo thanh toán thất bại');
+      setErrorContext('create');
       setShowError(true);
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const btnThuLai_Click = () => {
+    setShowError(false);
+    if (errorContext === 'create') {
+      btnXacNhan_Click();
+      return;
+    }
+
+    HienThi(id);
   };
 
   const btnQuayLai_Click = () => {
@@ -69,9 +84,9 @@ const LapYeuCauThanhToan = () => {
     </MainLayout>
   );
 
-  const { hopDong, tienCoc, dichVu } = data || {};
+  const { hopDong, tongGiaGiuong, dichVu } = data || {};
   const tongDichVu = dichVu?.reduce((sum, dv) => sum + Number(dv.gia), 0) || 0;
-  const tongTien = Number(tienCoc) + tongDichVu;
+  const tongTien = Number(tongGiaGiuong) + tongDichVu;
 
   return (
     <MainLayout>
@@ -140,10 +155,6 @@ const LapYeuCauThanhToan = () => {
                     <span className="text-slate-500 text-sm">Mã phòng</span>
                     <span className="font-bold text-navy">{hopDong?.hop_dong_giuong?.[0]?.giuong?.maphong}</span>
                   </div>
-                  <div className="flex justify-between border-b border-slate-50 pb-2">
-                    <span className="text-slate-500 text-sm">Loại hình</span>
-                    <span className="font-bold text-navy">{hopDong?.hop_dong_giuong?.[0]?.giuong?.phong?.loaihinh}</span>
-                  </div>
                 </div>
                 <div className="space-y-4">
                   <div className="flex justify-between border-b border-slate-50 pb-2">
@@ -163,9 +174,9 @@ const LapYeuCauThanhToan = () => {
               <div className="space-y-4">
                 <div className="flex justify-between items-center p-4 bg-indigo-50/30 rounded-2xl border border-indigo-100">
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold text-indigo-400 uppercase">Tiền cọc (Đã đối soát)</span>
+                    <span className="text-xs font-bold text-indigo-400 uppercase">Tổng giá giường thuê</span>
                     <span className="text-xl font-black text-indigo-600">
-                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(tienCoc)}
+                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(tongGiaGiuong)}
                     </span>
                   </div>
                 </div>
@@ -241,7 +252,7 @@ const LapYeuCauThanhToan = () => {
           message={errorMessage}
           primaryAction={{
             label: "Thử lại",
-            onClick: () => setShowError(false)
+            onClick: btnThuLai_Click
           }}
           secondaryAction={{
             label: "Hủy",

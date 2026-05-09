@@ -107,10 +107,10 @@ const TaoBienBanTraPhong = () => {
                     <span className="text-slate-500 text-sm">Mã giường</span>
                     <span className="font-bold text-navy">{contract?.hop_dong_giuong?.map(item => item.magiuong).join(', ')}</span>
                   </div>
-                  <div className="flex justify-between border-b border-slate-50 pb-2">
+                  {/* <div className="flex justify-between border-b border-slate-50 pb-2">
                     <span className="text-slate-500 text-sm">Loại phòng</span>
                     <span className="font-bold text-navy">{contract?.hop_dong_giuong?.[0]?.giuong?.phong?.loaihinh}</span>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
@@ -252,11 +252,11 @@ const TaoBienBanTraPhong = () => {
           title="Tạo biên bản thành công"
           message={`Biên bản trả phòng ${reportId} đã được tạo thành công và lưu vào hệ thống. Bạn có muốn xem trước và in biên bản không?`}
           primaryAction={{
-            label: "Xem trước và In",
+            label: "In biên bản",
             onClick: () => navigate(`/xem-truoc-in/${reportId}`)
           }}
           secondaryAction={{
-            label: "Để sau",
+            label: "Quay về trang chủ",
             onClick: () => navigate('/danh-sach-hop-dong')
           }}
         />

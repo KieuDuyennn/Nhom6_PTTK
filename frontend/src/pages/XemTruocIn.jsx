@@ -95,7 +95,7 @@ const XemTruocIn = () => {
                   <div className="grid grid-cols-2 gap-x-10 gap-y-3 text-sm">
                     <div className="flex justify-between border-b border-slate-50 pb-1">
                       <span className="font-bold">Nhân viên quản lý:</span>
-                      <span>{report?.manv}</span>
+                      <span>{report?.nhan_vien?.hoten}</span>
                     </div>
                     <div className="flex justify-between border-b border-slate-50 pb-1">
                       <span className="font-bold">Khách hàng:</span>
@@ -124,10 +124,10 @@ const XemTruocIn = () => {
                       <span className="font-bold">Giường:</span>
                       <span>{report?.hop_dong?.hop_dong_giuong?.map(item => item.magiuong).join(', ')}</span>
                     </div>
-                    <div className="flex justify-between border-b border-slate-50 pb-1">
+                    {/* <div className="flex justify-between border-b border-slate-50 pb-1">
                       <span className="font-bold">Loại hình:</span>
                       <span>{report?.hop_dong?.hop_dong_giuong?.[0]?.giuong?.phong?.loaihinh}</span>
-                    </div>
+                    </div> */}
                     <div className="flex justify-between border-b border-slate-50 pb-1">
                       <span className="font-bold">Ngày kết thúc:</span>
                       <span>{new Date(report?.hop_dong?.ngayketthuc || report?.ngaylap).toLocaleDateString('vi-VN')}</span>

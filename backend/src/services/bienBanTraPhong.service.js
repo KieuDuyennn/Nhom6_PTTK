@@ -14,12 +14,8 @@ class BienBanTraPhong_BUS {
       throw new Error('Hợp đồng chưa ở trạng thái Đã đối soát');
     }
 
-    // 2. Generate ID
-    const maBBTP = await bienBanTraPhongDAO.sinhMaBienBanTraPhong();
-
     // 3. Create report
     const newBB = {
-      mabienbantp: maBBTP,
       ngaylap: new Date().toISOString().split('T')[0],
       trangthai: 'Chưa xác nhận',
       mahd: maHD,
@@ -34,9 +30,6 @@ class BienBanTraPhong_BUS {
     return createdReport;
   }
 
-  static async SinhMaBienBan() {
-    return await bienBanTraPhongDAO.sinhMaBienBanTraPhong();
-  }
 
   static async LayTheoMa(maBBTP) {
     const report = await bienBanTraPhongDAO.docTheoMa(maBBTP);

@@ -1,6 +1,6 @@
-const Phong_DAO = require('../dao/Phong_DAO');
+const phongDao = require('../dao/phong.dao');
 
-class TimKiemPhong_BUS {
+class timKiemPhongService {
   /**
    * Tìm phòng dựa vào nhu cầu thuê từ phiếu yêu cầu
    * @param {object} params - { hinhThucThue, soNguoi, mucGia, chiNhanh }
@@ -21,20 +21,9 @@ class TimKiemPhong_BUS {
       macn = cnMap[chiNhanh] || null;
     }
 
-    // Cá nhân: tìm giường đơn trống
-    if (hinhThucThue === 'Cá nhân') {
-      const result = await Phong_DAO.timGiuongDon({ macn, mucGiaMax, gioiTinh });
-      return {
-        success: result.success,
-        loai: 'ca-nhan',
-        data: result.data || [],
-        error: result.error
-      };
-    }
-
     // Thuê nguyên căn: tìm phòng nguyên căn trống
     if (hinhThucThue === 'Thuê nguyên căn') {
-      const result = await Phong_DAO.timPhongNguyenCan({ macn, mucGiaMax, gioiTinh });
+      const result = await phongDao.timPhongNguyenCan({ macn, soNguoi: soNguoiThue, mucGiaMax, gioiTinh });
       return {
         success: result.success,
         loai: 'nguyen-can',
@@ -45,7 +34,7 @@ class TimKiemPhong_BUS {
 
     // Ở ghép: tìm phòng ở ghép có đủ giường trống
     if (hinhThucThue === 'Ở ghép') {
-      const result = await Phong_DAO.timPhongOGhep({ macn, soNguoi: soNguoiThue, mucGiaMax, gioiTinh });
+      const result = await phongDao.timPhongOGhep({ macn, soNguoi: soNguoiThue, mucGiaMax, gioiTinh });
       return {
         success: result.success,
         loai: 'o-ghep',
@@ -59,4 +48,4 @@ class TimKiemPhong_BUS {
   }
 }
 
-module.exports = TimKiemPhong_BUS;
+module.exports = timKiemPhongService;
