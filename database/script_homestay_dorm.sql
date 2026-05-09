@@ -51,10 +51,6 @@ CREATE TABLE PHONG (
     MaPhong         VARCHAR(10)     PRIMARY KEY,
     SoLuongGiuong   INT             NOT NULL CHECK (SoLuongGiuong > 0),
     GioiTinh        VARCHAR(10)     NOT NULL CHECK (GioiTinh IN ('Nam', 'Nữ')),
-<<<<<<< HEAD
-    --- LoaiHinh        VARCHAR(50)     NOT NULL CHECK (LoaiHinh IN ('Ở ghép', 'Nguyên phòng')),
-=======
->>>>>>> 7d028e39716799c43b838424f3c2840c3607ee8c
     TienThueThang   NUMERIC(12,0)   NOT NULL CHECK (TienThueThang > 0),
     TrangThai       VARCHAR(30)     NOT NULL CHECK (TrangThai IN ('Còn giường trống', 'Hết giường', 'Đang giữ chỗ')),
     SoGiuongTrong   INT             NOT NULL DEFAULT 0,
@@ -67,7 +63,6 @@ CREATE TABLE PHONG (
 CREATE TABLE GIUONG (
     MaGiuong    VARCHAR(10)     NOT NULL,
     MaPhong     VARCHAR(10)     NOT NULL REFERENCES PHONG(MaPhong),
-    --- GiaGiuong   NUMERIC(12,0)   NOT NULL CHECK (GiaGiuong > 0),
     TinhTrang   VARCHAR(20)     NOT NULL CHECK (TinhTrang IN ('Chưa sử dụng', 'Đang sử dụng', 'Đang giữ chỗ')),
     PRIMARY KEY (MaGiuong, MaPhong)
 );
@@ -193,7 +188,6 @@ ALTER TABLE NHOM_KHACH_THUE
 CREATE TABLE PHIEU_YEU_CAU_XEM_PHONG (
     MaYC                VARCHAR(10)     PRIMARY KEY,
     SoLuongDuKien       INT             NOT NULL CHECK (SoLuongDuKien > 0),
-    --- LoaiPhong           VARCHAR(30)     NOT NULL CHECK (LoaiPhong IN ('Ở ghép', 'Nguyên phòng')),
     MucGia              NUMERIC(12,0),
     ThoiGianDuKienVao   DATE,
     ThoiHanThue         INT             CHECK (ThoiHanThue > 0),   -- số tháng
