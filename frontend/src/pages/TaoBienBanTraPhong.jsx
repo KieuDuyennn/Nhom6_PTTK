@@ -107,10 +107,10 @@ const TaoBienBanTraPhong = () => {
                     <span className="text-slate-500 text-sm">Mã giường</span>
                     <span className="font-bold text-navy">{contract?.hop_dong_giuong?.map(item => item.magiuong).join(', ')}</span>
                   </div>
-                  <div className="flex justify-between border-b border-slate-50 pb-2">
+                  {/* <div className="flex justify-between border-b border-slate-50 pb-2">
                     <span className="text-slate-500 text-sm">Loại phòng</span>
                     <span className="font-bold text-navy">{contract?.hop_dong_giuong?.[0]?.giuong?.phong?.loaihinh}</span>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>

@@ -51,7 +51,7 @@ CREATE TABLE PHONG (
     MaPhong         VARCHAR(10)     PRIMARY KEY,
     SoLuongGiuong   INT             NOT NULL CHECK (SoLuongGiuong > 0),
     GioiTinh        VARCHAR(10)     NOT NULL CHECK (GioiTinh IN ('Nam', 'Nữ', 'Hỗn hợp')),
-    LoaiHinh        VARCHAR(50)     NOT NULL CHECK (LoaiHinh IN ('Ở ghép', 'Nguyên phòng')),
+    --- LoaiHinh        VARCHAR(50)     NOT NULL CHECK (LoaiHinh IN ('Ở ghép', 'Nguyên phòng')),
     TienThueThang   NUMERIC(12,0)   NOT NULL CHECK (TienThueThang > 0),
     TrangThai       VARCHAR(30)     NOT NULL CHECK (TrangThai IN ('Chưa sử dụng', 'Đang sử dụng', 'Đang giữ chỗ')),
     MaCN            VARCHAR(10)     NOT NULL REFERENCES CHI_NHANH(MaCN)
@@ -63,7 +63,7 @@ CREATE TABLE PHONG (
 CREATE TABLE GIUONG (
     MaGiuong    VARCHAR(10)     NOT NULL,
     MaPhong     VARCHAR(10)     NOT NULL REFERENCES PHONG(MaPhong),
-    GiaGiuong   NUMERIC(12,0)   NOT NULL CHECK (GiaGiuong > 0),
+    --- GiaGiuong   NUMERIC(12,0)   NOT NULL CHECK (GiaGiuong > 0),
     TinhTrang   VARCHAR(20)     NOT NULL CHECK (TinhTrang IN ('Chưa sử dụng', 'Đang sử dụng', 'Đang giữ chỗ')),
     PRIMARY KEY (MaGiuong, MaPhong)
 );

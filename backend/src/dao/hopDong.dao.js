@@ -14,10 +14,7 @@ async function layDanhSachTheoTrangThai(tt) {
       hop_dong_giuong (
         magiuong,
         giuong (
-          maphong,
-          phong (
-            loaihinh
-          )
+          maphong
         )
       )
     `)
@@ -57,10 +54,7 @@ async function timKiem(keyword, tt) {
       hop_dong_giuong (
         magiuong,
         giuong (
-          maphong,
-          phong (
-            loaihinh
-          )
+          maphong
         )
       )
     `);

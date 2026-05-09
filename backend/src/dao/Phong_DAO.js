@@ -13,7 +13,6 @@ class Phong_DAO {
         maphong,
         soluonggiuong,
         gioitinh,
-        loaihinh,
         tienthuethang,
         trangthai,
         macn,
