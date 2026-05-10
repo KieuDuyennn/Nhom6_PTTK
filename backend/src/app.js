@@ -6,7 +6,9 @@ const phieuYeuCauRoutes = require('./routes/phieuYeuCau.routes');
 const phongRoutes = require('./routes/phong.routes');
 const checkoutRoutes = require('./routes/checkout.routes');
 const thanhToanRoutes = require('./routes/thanhToan.routes');
+const chiNhanhRoutes = require('./routes/chiNhanh.routes');
 const errorMiddleware = require('./middlewares/error.middleware');
+
 
 const app = express();
 
@@ -19,6 +21,7 @@ app.use('/api/phieu-yeu-cau', phieuYeuCauRoutes);
 app.use('/api/phong', phongRoutes);
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api/thanh-toan', thanhToanRoutes);
+app.use('/api/chi-nhanh', chiNhanhRoutes);
 
 app.use(errorMiddleware);
 

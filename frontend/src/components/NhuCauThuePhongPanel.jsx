@@ -1,6 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { chiNhanhService } from '../services/chiNhanhService';
 
 export default function NhuCauThuePhongPanel({ formData, onChange, errors }) {
+  const [danhSachChiNhanh, setDanhSachChiNhanh] = useState([]);
+
+  useEffect(() => {
+    chiNhanhService.layDanhSachChiNhanh().then(result => {
+      if (result.success) setDanhSachChiNhanh(result.data);
+    });
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     onChange(name, value);
@@ -29,10 +38,9 @@ export default function NhuCauThuePhongPanel({ formData, onChange, errors }) {
             className={`bg-[#fdf2f8] border ${errors?.ChiNhanh ? 'border-red-500' : 'border-[#fccee8]'} border-[0.87px] border-solid h-[49.715px] px-4 rounded-[10px] w-full font-['Inter',sans-serif] text-[#0a0a0a] text-[16px] focus:outline-none focus:ring-1 focus:ring-[#e60076] appearance-none`}
           >
             <option value="">Chọn chi nhánh</option>
-            <option value="CN01">Bình Thạnh</option>
-            <option value="CN02">Thủ Đức</option>
-            <option value="CN03">Gò Vấp</option>
-            <option value="CN04">Phú Nhuận</option>
+            {danhSachChiNhanh.map(cn => (
+              <option key={cn.macn} value={cn.macn}>{cn.tencn}</option>
+            ))}
           </select>
           {errors?.ChiNhanh && <span className="text-red-500 text-xs">{errors.ChiNhanh}</span>}
         </div>

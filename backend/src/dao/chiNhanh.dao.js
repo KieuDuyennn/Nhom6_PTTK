@@ -15,6 +15,21 @@ class chiNhanhDao {
     }
     return { success: true, data };
   }
+
+  // Lấy tất cả chi nhánh (dùng cho dropdown)
+  static async selectAll() {
+    const { data, error } = await supabase
+      .from('chi_nhanh')
+      .select('macn, tencn')
+      .order('macn', { ascending: true });
+
+    if (error) {
+      console.error('Lỗi chiNhanhDao.selectAll:', error);
+      return { success: false, error };
+    }
+    return { success: true, data: data || [] };
+  }
 }
 
 module.exports = chiNhanhDao;
+
