@@ -50,7 +50,6 @@ const GhiNhanXacNhanThue = () => {
     try {
       const res = await api.post(`/phieu-yeu-cau/${id}/xac-nhan-thue`, { dongYNoiQuy: true });
       if (res.data.success) {
-        alert(res.data.message || 'Xác nhận thành công!');
         navigate('/phieu-yeu-cau');
       } else {
         alert(res.data.message || 'Lỗi xác nhận thuê');

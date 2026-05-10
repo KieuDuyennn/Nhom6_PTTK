@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '../components/MainLayout';
-import axios from 'axios';
+import { phieuYeuCauService } from '../services/phieuYeuCauService';
 import ModalXacNhanHuy from '../components/ModalXacNhanHuy';
 
 const DanhSachLichHen = () => {
@@ -19,18 +19,23 @@ const DanhSachLichHen = () => {
       navigate('/');
     } else {
       setUser(JSON.parse(savedUser));
-      fetchLichHen();
     }
   }, [navigate]);
 
+  useEffect(() => {
+    if (user) {
+      const timer = setTimeout(() => {
+        fetchLichHen();
+      }, 500); // Debounce 500ms
+      return () => clearTimeout(timer);
+    }
+  }, [searchTerm, user]);
+
   const fetchLichHen = async () => {
     try {
-      // Chỉ lấy các phiếu có trạng thái 'Đang hẹn xem'
-      console.log('[DanhSachLichHen] fetchLichHen -> gọi API danh-sach Đang hẹn xem');
-      const response = await axios.get('http://localhost:3001/api/phieu-yeu-cau/danh-sach?trangthai=Đang hẹn xem');
-      if (response.data.success) {
-        console.log('[DanhSachLichHen] fetchLichHen -> số lịch nhận được:', response.data.data?.length || 0);
-        setDsLichHen(response.data.data);
+      const result = await phieuYeuCauService.getDanhSach('Đang hẹn xem', searchTerm);
+      if (result.success) {
+        setDsLichHen(result.data || []);
       }
     } catch (error) {
       console.error('Lỗi khi tải danh sách lịch hẹn:', error);
@@ -54,18 +59,17 @@ const DanhSachLichHen = () => {
     setProcessingMaYC(mayc);
     console.log('[DanhSachLichHen] bắt đầu gọi API Hủy lịch, mayc =', mayc);
     try {
-      const res = await axios.delete(`http://localhost:3001/api/phieu-yeu-cau/huy-lich/${mayc}`);
-      console.log('[DanhSachLichHen] response Hủy lịch:', res.data);
+      const res = await phieuYeuCauService.huyLich(mayc);
+      console.log('[DanhSachLichHen] response Hủy lịch:', res);
 
-      if (res.data.success) {
+      if (res.success) {
         setDsLichHen(prev => prev.filter(item => item.mayc !== mayc));
-        alert(`Đã hủy lịch ${mayc} thành công.`);
       } else {
-        alert('Hủy lịch thất bại: ' + (res.data.message || 'Không rõ lý do'));
+        alert('Hủy lịch thất bại: ' + (res.message || 'Không rõ lý do'));
       }
     } catch (error) {
-      console.error('[DanhSachLichHen] lỗi gọi API Hủy lịch:', error?.response?.data || error.message);
-      alert('Lỗi hủy lịch: ' + (error.response?.data?.message || error.message));
+      console.error('[DanhSachLichHen] lỗi gọi API Hủy lịch:', error);
+      alert('Lỗi hủy lịch: ' + (error.message));
     } finally {
       setProcessingMaYC(null);
       setConfirmModal({ open: false, mayc: null });
@@ -87,26 +91,13 @@ const DanhSachLichHen = () => {
   };
 
   const filteredLichHen = dsLichHen.filter(item => {
-    // 1. Lọc theo tab (All/Upcoming)
-    let matchesTab = true;
+    if (activeTab === 'all') return true;
     if (activeTab === 'upcoming') {
-      if (!item.thoigianhenxem) matchesTab = false;
-      else {
-        const hen = new Date(item.thoigianhenxem);
-        matchesTab = (hen >= new Date());
-      }
+      if (!item.thoigianhenxem) return false;
+      const hen = new Date(item.thoigianhenxem);
+      return hen >= new Date();
     }
-
-    // 2. Lọc theo search term (Tên khách hoặc SĐT)
-    let matchesSearch = true;
-    if (searchTerm) {
-      const lowerSearch = searchTerm.toLowerCase();
-      const tenKhach = (item.khach_hang?.hoten || '').toLowerCase();
-      const sdtKhach = (item.khach_hang?.sdt || '').toLowerCase();
-      matchesSearch = tenKhach.includes(lowerSearch) || sdtKhach.includes(lowerSearch);
-    }
-
-    return matchesTab && matchesSearch;
+    return true;
   });
 
   if (!user) return null;
