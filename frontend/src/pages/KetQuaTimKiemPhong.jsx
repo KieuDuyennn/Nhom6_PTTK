@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import MainLayout from '../components/MainLayout';
 import RoomCard from '../components/RoomCard';
 import EmptyState from '../components/EmptyState';
+import { phongService } from '../services/phongService';
 
 export default function KetQuaTimKiemPhong() {
   const [searchParams] = useSearchParams();
@@ -134,15 +135,12 @@ export default function KetQuaTimKiemPhong() {
     }
     setLoading(true);
 
-    const params = new URLSearchParams({ hinhThucThue, soNguoi, mucGia, chiNhanh, gioiTinh });
-
-    fetch(`http://localhost:3001/api/phieu-yeu-cau/tim-kiem-phong?${params.toString()}`)
-      .then(res => res.json())
+    phongService.timKiemPhong({ hinhThucThue, soNguoi, mucGia, chiNhanh, gioiTinh })
       .then(json => {
         if (json.success) {
           setLoaiKetQua(json.loai);
           setResults(transformData(json.data, json.loai));
-          setCurrentPage(1); // Reset to page 1 on new search
+          setCurrentPage(1);
         } else {
           setResults([]);
         }

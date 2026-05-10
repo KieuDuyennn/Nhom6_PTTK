@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const timKiemPhongService = require('../services/timKiemPhong.service');
 const phieuYeuCauService = require('../services/phieuYeuCau.service');
+const chiTietPhieuYeuCauService = require('../services/chiTietPhieuYeuCau.service');
 
 // POST /api/phieu-yeu-cau/dang-ky
 router.post('/dang-ky', async (req, res, next) => {
@@ -26,23 +26,6 @@ router.post('/dang-ky', async (req, res, next) => {
     } else {
       res.status(400).json(result);
     }
-  } catch (error) {
-    next(error);
-  }
-});
-
-// GET /api/phieu-yeu-cau/tim-kiem-phong?hinhThucThue=...&soNguoi=...&mucGia=...&chiNhanh=...&gioiTinh=...
-router.get('/tim-kiem-phong', async (req, res, next) => {
-  try {
-    const { hinhThucThue, soNguoi, mucGia, chiNhanh, gioiTinh } = req.query;
-
-    if (!hinhThucThue) {
-      return res.status(400).json({ success: false, message: 'Thiếu hình thức thuê' });
-    }
-
-    const result = await timKiemPhongService.timKiemPhong({ hinhThucThue, soNguoi, mucGia, chiNhanh, gioiTinh });
-
-    res.status(200).json(result);
   } catch (error) {
     next(error);
   }
@@ -80,7 +63,7 @@ router.patch('/cap-nhat-lich-hen', async (req, res, next) => {
 router.get('/chi-tiet/:mayc', async (req, res, next) => {
   try {
     const { mayc } = req.params;
-    const result = await phieuYeuCauService.layChiTiet(mayc);
+    const result = await chiTietPhieuYeuCauService.layChiTiet(mayc);
     if (!result.success) return res.status(500).json(result);
     res.json(result);
   } catch (error) {
@@ -113,7 +96,7 @@ router.patch('/update-trang-thai-chot', async (req, res, next) => {
       });
     }
 
-    const result = await phieuYeuCauService.updateTrangThaiChot(mayc, maphong, magiuong, trangthaichot);
+    const result = await chiTietPhieuYeuCauService.updateTrangThaiChot(mayc, maphong, magiuong, trangthaichot);
     if (!result.success) return res.status(500).json(result);
     res.json(result);
   } catch (error) {
@@ -121,17 +104,6 @@ router.patch('/update-trang-thai-chot', async (req, res, next) => {
   }
 });
 
-// DELETE /api/phieu-yeu-cau/chi-tiet/:mayc/:maphong/:magiuong - Xóa chi tiết phiếu
-router.delete('/chi-tiet/:mayc/:maphong/:magiuong', async (req, res, next) => {
-  try {
-    const { mayc, maphong, magiuong } = req.params;
-    const result = await phieuYeuCauService.deleteChiTiet(mayc, maphong, magiuong);
-    if (!result.success) return res.status(500).json(result);
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-});
 
 // DELETE /api/phieu-yeu-cau/huy-lich/:mayc - Xóa toàn bộ lịch hẹn và chi tiết
 router.delete('/huy-lich/:mayc', async (req, res, next) => {
@@ -170,7 +142,9 @@ router.patch('/update-trang-thai', async (req, res, next) => {
   }
 });
 
-// ─── ROUTE: Lấy danh sách PYC trạng thái "Cần xác nhận" ───────────────────
+// =============================================================================
+// PHẦN CỦA DUYÊN: ROUTE Lấy danh sách PYC trạng thái "Cần xác nhận"
+// =============================================================================
 // GET /api/phieu-yeu-cau/can-xac-nhan?keyword=...
 // Dùng cho tab "PYC Xem Phòng" ở màn hình MH_DanhSachPYCXemPhong
 router.get('/can-xac-nhan', async (req, res, next) => {
@@ -184,7 +158,9 @@ router.get('/can-xac-nhan', async (req, res, next) => {
   }
 });
 
-// ─── ROUTE: Chi tiết PYC kèm tình trạng thực tế phòng/giường ──────────────
+// =============================================================================
+// PHẦN CỦA DUYÊN: ROUTE Chi tiết PYC kèm tình trạng thực tế phòng/giường
+// =============================================================================
 // GET /api/phieu-yeu-cau/chi-tiet-voi-tinh-trang/:mayc
 // Dùng cho màn hình MH_ChiTietPYCXemPhong và MH_GhiNhanXacNhanThue
 router.get('/chi-tiet-voi-tinh-trang/:mayc', async (req, res, next) => {
@@ -221,7 +197,9 @@ router.put('/:mayc/thong-tin-khach', async (req, res, next) => {
   }
 });
 
-// ─── ROUTE: Hủy thuê ───────────────────────────────────────────────────────
+// =============================================================================
+// PHẦN CỦA DUYÊN: ROUTE Hủy thuê
+// =============================================================================
 // PATCH /api/phieu-yeu-cau/:mayc/huy-thue
 // Dùng khi nhân viên nhấn "Xác nhận hủy" trong ModalHuyThue ở MH_ChiTietPYCXemPhong
 router.patch('/:mayc/huy-thue', async (req, res, next) => {
@@ -256,7 +234,9 @@ router.get('/noi-quy/:mayc', async (req, res, next) => {
   }
 });
 
-// ─── ROUTE: Xác nhận thuê (hành động chính UC4) ────────────────────────────
+// =============================================================================
+// PHẦN CỦA DUYÊN: ROUTE Xác nhận thuê (hành động chính UC4)
+// =============================================================================
 // POST /api/phieu-yeu-cau/:mayc/xac-nhan-thue
 // Dùng khi nhân viên tick nội quy và nhấn "Chuyển hồ sơ xác nhận"
 // trong MH_GhiNhanXacNhanThue
