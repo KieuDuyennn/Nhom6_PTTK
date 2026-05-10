@@ -1,11 +1,12 @@
 const khachHangService = require('./khachHang.service');
 const phieuYeuCauDao = require('../dao/phieuYeuCau.dao');
-const chiTietPhieuYeuCauDao = require('../dao/chiTietPhieuYeuCau.dao');
 const chiTietPhieuYeuCauService = require('./chiTietPhieuYeuCau.service');
-const phongDao = require('../dao/phong.dao');
 const giuongDao = require('../dao/giuong.dao');
-const thanhToanDao = require('../dao/thanhToan.dao');
-const chiNhanhDao = require('../dao/chiNhanh.dao');
+// PHẦN CỦA DUYÊN: Import Service (Service gọi Service, không gọi DAO khác tên)
+const phongService = require('./phong.service');
+const giuongService = require('./giuong.service');
+const chiNhanhService = require('./chiNhanh.service');
+const thanhToanService = require('./thanhToan.service');
 
 class phieuYeuCauService {
   static async taoPhieuYeuCau(data) {
@@ -252,7 +253,7 @@ class phieuYeuCauService {
   static async layChiTietVoiTinhTrang(mayc) {
     try {
       // 1. Lấy chi tiết PYC (join khach_hang + chi_tiet → giuong → phong)
-      const pycResult = await chiTietPhieuYeuCauDao.getChiTiet(mayc);
+      const pycResult = await chiTietPhieuYeuCauService.layChiTiet(mayc);
       if (!pycResult.success) return pycResult;
       if (!pycResult.data) return { success: false, message: 'Không tìm thấy hồ sơ' };
 
@@ -268,15 +269,15 @@ class phieuYeuCauService {
       const maphongChinh = chiTiet[0]?.maphong || null;
       console.log(`[layChiTietVoiTinhTrang] maphongChinh=${maphongChinh}`);
 
-      // 4. Lấy thông tin phòng + chi nhánh qua DAO (chuẩn 3 lớp)
+      // 4. Lấy thông tin phòng + chi nhánh qua Service (chuẩn 3 lớp)
       let phongInfo = null;
       let chiNhanhInfo = null;
       if (maphongChinh) {
-        const phongResult = await phongDao.selectByMaPhong(maphongChinh);
+        const phongResult = await phongService.layThongTinPhong(maphongChinh);
         console.log(`[layChiTietVoiTinhTrang] phongData:`, phongResult.data);
         if (phongResult.success && phongResult.data) {
           phongInfo = phongResult.data;
-          const cnResult = await chiNhanhDao.selectByMaCN(phongInfo.macn);
+          const cnResult = await chiNhanhService.layThongTinChiNhanh(phongInfo.macn);
           chiNhanhInfo = cnResult.success ? cnResult.data : null;
         }
       }
@@ -288,7 +289,7 @@ class phieuYeuCauService {
       // 6. Lấy tình trạng thực tế từng giường đã chốt
       const dsGiuongDaChotVoiTinhTrang = [];
       for (const ct of dsGiuongDaChot) {
-        const result = await giuongDao.selectTinhTrang(ct.magiuong, ct.maphong);
+        const result = await giuongService.layTinhTrangGiuong(ct.magiuong, ct.maphong);
         console.log(`[layChiTietVoiTinhTrang] giuong ${ct.magiuong}/${ct.maphong}: tinhtrang=${result.data?.tinhtrang}`);
         dsGiuongDaChotVoiTinhTrang.push({
           maGiuong:  ct.magiuong,
@@ -303,7 +304,7 @@ class phieuYeuCauService {
       if (loaiHinhThue === 'Nguyên phòng') {
         // Nguyên phòng: TẤT CẢ giường trong phòng phải 'Chưa sử dụng'
         if (maphongChinh) {
-          const bedsResult = await giuongDao.selectByMaPhong(maphongChinh);
+          const bedsResult = await giuongService.layDanhSachGiuongCuaPhong(maphongChinh);
           const allBeds = bedsResult.success ? bedsResult.data : [];
           tinhTrangPhongKhaDung =
             allBeds.length > 0 &&
@@ -387,15 +388,14 @@ class phieuYeuCauService {
       }
 
       // 2. Lấy makh từ phiếu
-      const pycResult = await chiTietPhieuYeuCauDao.getChiTiet(mayc);
+      const pycResult = await chiTietPhieuYeuCauService.layChiTiet(mayc);
       if (!pycResult.success || !pycResult.data) {
         return { success: false, message: 'Không tìm thấy hồ sơ' };
       }
       const makh = pycResult.data.makh;
 
       // 3. Cập nhật khách hàng
-      const khachHangDao = require('../dao/khachHang.dao');
-      const khResult = await khachHangDao.updateThongTin(makh, {
+      const khResult = await khachHangService.updateThongTin(makh, {
         hoten: hoTen,
         sdt,
         socccd: cccd,
@@ -439,7 +439,7 @@ class phieuYeuCauService {
   static async ghiNhanXacNhanNoiQuy(mayc) {
     try {
       // 1. Lấy thông tin PYC + chi tiết phòng/giường
-      const pycResult = await chiTietPhieuYeuCauDao.getChiTiet(mayc);
+      const pycResult = await chiTietPhieuYeuCauService.layChiTiet(mayc);
       if (!pycResult.success || !pycResult.data) {
         return { success: false, message: 'Không tìm thấy hồ sơ' };
       }
@@ -455,10 +455,10 @@ class phieuYeuCauService {
       }
 
       // 3. Sinh mã thanh toán mới (tăng dần: TT001, TT002, ...)
-      const matt = await thanhToanDao.sinhMaThanhToan();
+      const matt = await thanhToanService.TaoMa();
 
       // 4. Tạo phiếu thanh toán cọc (SoTien = 0, kế toán tính sau)
-      await thanhToanDao.them({
+      await thanhToanService.ThemPhieu({
         matt,
         loaitt:          'Tiền cọc',
         sotien:          0,
@@ -472,7 +472,7 @@ class phieuYeuCauService {
       // 5. Cập nhật tinhtrang từng GIƯỜNG đã chốt → 'Đang giữ chỗ'
       const giuongErrors = [];
       for (const ct of giuongDaChot) {
-        const result = await giuongDao.updateTinhTrang(ct.magiuong, ct.maphong, 'Đang giữ chỗ');
+        const result = await giuongService.capNhatTinhTrangGiuong(ct.magiuong, ct.maphong, 'Đang giữ chỗ');
         if (!result.success) {
           console.error(`Lỗi cập nhật giường ${ct.magiuong}/${ct.maphong}:`, result.error);
           giuongErrors.push({ magiuong: ct.magiuong, maphong: ct.maphong });

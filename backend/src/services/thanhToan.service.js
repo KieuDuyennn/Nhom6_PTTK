@@ -10,6 +10,10 @@ class ThanhToan_BUS {
     return await thanhToanDAO.sinhMaThanhToan();
   }
 
+  static async ThemPhieu(tt) {
+    return await thanhToanDAO.them(tt);
+  }
+
   static async TaoPhieuThanhToanKyDau(maHD, maNV, maTT) {
     // 1. Validate trạng thái hợp đồng qua BUS
     const hopDong = await hopDongBUS.LayTheoMa(maHD);

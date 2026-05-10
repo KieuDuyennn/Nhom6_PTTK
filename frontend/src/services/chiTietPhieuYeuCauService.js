@@ -24,5 +24,4 @@ export const chiTietPhieuYeuCauService = {
       throw error;
     }
   },
-  }
 };

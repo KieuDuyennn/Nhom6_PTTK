@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '../components/MainLayout';
 import ModalHuyThue from '../components/ModalHuyThue';
+import ModalThongBao from '../components/ModalThongBao';
 import api from '../services/api';
 
 const ChiTietPYCXemPhong = () => {
@@ -15,6 +16,7 @@ const ChiTietPYCXemPhong = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({});
   const [showModalHuy, setShowModalHuy] = useState(false);
+  const [modalThongBao, setModalThongBao] = useState({ show: false, type: 'success', title: '', message: '' });
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
@@ -91,12 +93,28 @@ const ChiTietPYCXemPhong = () => {
         const updated = { ...phieu, trangThai: 'Hủy thuê', lyDoHuy: lyDo };
         setPhieu(updated);
         setShowModalHuy(false);
+        setModalThongBao({
+          show: true,
+          type: 'success',
+          title: 'Hủy thuê thành công',
+          message: `Hồ sơ ${id} đã được hủy thuê thành công.`,
+        });
       } else {
-        alert(res.data.message || 'Lỗi khi hủy thuê');
+        setModalThongBao({
+          show: true,
+          type: 'error',
+          title: 'Lỗi',
+          message: res.data.message || 'Lỗi khi hủy thuê',
+        });
       }
     } catch (error) {
       console.error('Lỗi khi hủy thuê:', error);
-      alert('Lỗi khi hủy thuê');
+      setModalThongBao({
+        show: true,
+        type: 'error',
+        title: 'Lỗi',
+        message: 'Lỗi khi hủy thuê',
+      });
     }
   };
 
@@ -326,6 +344,17 @@ const ChiTietPYCXemPhong = () => {
         visible={showModalHuy}
         onDong={() => setShowModalHuy(false)}
         onXacNhan={handleHuyThue}
+      />
+
+      <ModalThongBao
+        show={modalThongBao.show}
+        type={modalThongBao.type}
+        title={modalThongBao.title}
+        message={modalThongBao.message}
+        primaryAction={{
+          label: 'Đóng',
+          onClick: () => setModalThongBao({ ...modalThongBao, show: false }),
+        }}
       />
     </MainLayout>
   );

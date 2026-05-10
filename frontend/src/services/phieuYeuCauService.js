@@ -53,5 +53,27 @@ export const phieuYeuCauService = {
       console.error('Lỗi phieuYeuCauService.updateTrangThai:', error);
       throw error;
     }
+  },
+
+  // PHẦN CỦA DUYÊN: Lấy chi tiết + nội quy cho màn hình xác nhận thuê
+  layChiTietNoiQuy: async (mayc) => {
+    try {
+      const response = await axios.get(`${API_URL}/phieu-yeu-cau/noi-quy/${mayc}`);
+      return response.data;
+    } catch (error) {
+      console.error('Lỗi phieuYeuCauService.layChiTietNoiQuy:', error);
+      return { success: false, message: 'Lỗi khi tải nội quy' };
+    }
+  },
+
+  // PHẦN CỦA DUYÊN: Xác nhận thuê (gửi cho kế toán)
+  xacNhanThue: async (mayc, data) => {
+    try {
+      const response = await axios.post(`${API_URL}/phieu-yeu-cau/${mayc}/xac-nhan-thue`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Lỗi phieuYeuCauService.xacNhanThue:', error);
+      return { success: false, message: error.response?.data?.message || 'Lỗi khi xác nhận thuê' };
+    }
   }
 };
