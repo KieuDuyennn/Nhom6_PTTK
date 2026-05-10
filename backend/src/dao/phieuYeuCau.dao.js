@@ -57,63 +57,6 @@ class phieuYeuCauDao {
     return { success: true, data: gioBan };
   }
 
-  static async getChiTiet(mayc) {
-    const { data, error } = await supabase
-      .from('phieu_yeu_cau_xem_phong')
-      .select(`*, khach_hang (*), chi_tiet:chi_tiet_phieu_yeu_cau(*)`)
-      .eq('mayc', mayc)
-      .single();
-
-    if (error) {
-      console.error('Lỗi phieuYeuCauDao.getChiTiet:', error);
-      return { success: false, error };
-    }
-
-    // get chi_tiet rows joined to giuong->phong
-    const { data: chiTietData, error: chiTietError } = await supabase
-      .from('chi_tiet_phieu_yeu_cau')
-      .select(`mayc, magiuong, maphong, trangthaichot, giuong (*, phong (*))`)
-      .eq('mayc', mayc);
-
-    if (chiTietError) {
-      console.error('Lỗi phieuYeuCauDao.getChiTiet chi_tiet:', chiTietError);
-      return { success: true, data: { ...data, chi_tiet: [] }, warning: chiTietError };
-    }
-
-    return { success: true, data: { ...data, chi_tiet: chiTietData } };
-  }
-
-  static async updateTrangThaiChot(mayc, maphong, magiuong, trangthaichot) {
-    const { data, error } = await supabase
-      .from('chi_tiet_phieu_yeu_cau')
-      .update({ trangthaichot })
-      .eq('mayc', mayc)
-      .eq('maphong', maphong)
-      .eq('magiuong', magiuong)
-      .select();
-
-    if (error) {
-      console.error('Lỗi phieuYeuCauDao.updateTrangThaiChot:', error);
-      return { success: false, error };
-    }
-    return { success: true, data };
-  }
-
-  static async deleteChiTiet(mayc, maphong, magiuong) {
-    const { data, error } = await supabase
-      .from('chi_tiet_phieu_yeu_cau')
-      .delete()
-      .eq('mayc', mayc)
-      .eq('maphong', maphong)
-      .eq('magiuong', magiuong)
-      .select();
-
-    if (error) {
-      console.error('Lỗi phieuYeuCauDao.deleteChiTiet:', error);
-      return { success: false, error };
-    }
-    return { success: true, data };
-  }
 
   static async deletePhieu(mayc) {
     const { data, error } = await supabase
@@ -149,17 +92,23 @@ class phieuYeuCauDao {
       .select(`
         mayc, soluongdukien, loaihinhthue, mucgia,
         thoigiandukienvao, thoihanthue, thoigianhenxem,
-        gioitinh, ngayguiyeucau, trangthai, loaihinhthue,
+        ngayguiyeucau, trangthai,
         manv, makh,
-        khach_hang (makh, hoten, sdt, email, gioitinh, socccd)
+        khach_hang!inner (makh, hoten, sdt, email, gioitinh, socccd)
       `)
       .order('ngayguiyeucau', { ascending: false });
 
     if (trangthai) {
       query = query.eq('trangthai', trangthai);
     } else {
-      // Mặc định không load các phiếu đang trong quá trình hẹn xem (chưa hoàn thành xem phòng)
       query = query.not('trangthai', 'eq', 'Đang hẹn xem');
+    }
+
+    if (keyword) {
+      const kw = `%${keyword}%`;
+      // Tìm kiếm theo MaYC hoặc Tên khách hoặc SĐT khách
+      // Lưu ý: Sử dụng !inner join ở trên cho phép ta filter theo khach_hang.hoten/sdt trực tiếp
+      query = query.or(`mayc.ilike.${kw},khach_hang.hoten.ilike.${kw},khach_hang.sdt.ilike.${kw}`);
     }
 
     const { data, error } = await query;
@@ -168,17 +117,7 @@ class phieuYeuCauDao {
       return { success: false, error };
     }
 
-    let result = data || [];
-    if (keyword) {
-      const kw = keyword.toLowerCase();
-      result = result.filter(p =>
-        p.mayc?.toLowerCase().includes(kw) ||
-        p.khach_hang?.hoten?.toLowerCase().includes(kw) ||
-        p.khach_hang?.sdt?.includes(kw)
-      );
-    }
-
-    return { success: true, data: result };
+    return { success: true, data: data || [] };
   }
 
   // Method: Lấy danh sách PYC trạng thái 'Cần xác nhận', có tìm kiếm keyword

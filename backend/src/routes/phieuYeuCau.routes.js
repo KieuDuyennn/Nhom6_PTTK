@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const timKiemPhongService = require('../services/timKiemPhong.service');
 const phieuYeuCauService = require('../services/phieuYeuCau.service');
+const chiTietPhieuYeuCauService = require('../services/chiTietPhieuYeuCau.service');
 
 // POST /api/phieu-yeu-cau/dang-ky
 router.post('/dang-ky', async (req, res, next) => {
@@ -80,7 +81,7 @@ router.patch('/cap-nhat-lich-hen', async (req, res, next) => {
 router.get('/chi-tiet/:mayc', async (req, res, next) => {
   try {
     const { mayc } = req.params;
-    const result = await phieuYeuCauService.layChiTiet(mayc);
+    const result = await chiTietPhieuYeuCauService.layChiTiet(mayc);
     if (!result.success) return res.status(500).json(result);
     res.json(result);
   } catch (error) {
@@ -113,7 +114,7 @@ router.patch('/update-trang-thai-chot', async (req, res, next) => {
       });
     }
 
-    const result = await phieuYeuCauService.updateTrangThaiChot(mayc, maphong, magiuong, trangthaichot);
+    const result = await chiTietPhieuYeuCauService.updateTrangThaiChot(mayc, maphong, magiuong, trangthaichot);
     if (!result.success) return res.status(500).json(result);
     res.json(result);
   } catch (error) {
@@ -125,7 +126,7 @@ router.patch('/update-trang-thai-chot', async (req, res, next) => {
 router.delete('/chi-tiet/:mayc/:maphong/:magiuong', async (req, res, next) => {
   try {
     const { mayc, maphong, magiuong } = req.params;
-    const result = await phieuYeuCauService.deleteChiTiet(mayc, maphong, magiuong);
+    const result = await chiTietPhieuYeuCauService.deleteChiTiet(mayc, maphong, magiuong);
     if (!result.success) return res.status(500).json(result);
     res.json(result);
   } catch (error) {

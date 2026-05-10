@@ -183,7 +183,6 @@ CREATE TABLE PHIEU_YEU_CAU_XEM_PHONG (
     ThoiHanThue         INT             CHECK (ThoiHanThue > 0),   -- số tháng
     ThoiGianHenXem      TIMESTAMP,
     YeuCauKhac          TEXT,
-    GioiTinh            VARCHAR(10)     CHECK (GioiTinh IN ('Nam', 'Nữ')),
     NgayGuiYeuCau       TIMESTAMP       NOT NULL DEFAULT NOW(),
     TrangThai           VARCHAR(30)     NOT NULL CHECK (TrangThai IN ('Đang hẹn xem', 'Cần xác nhận', 'Hủy thuê', 'Hoàn tất')),
     LyDoHuy             TEXT,

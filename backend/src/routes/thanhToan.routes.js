@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ThanhToan_BUS = require('../services/thanhToan.service');
+const HopDong_BUS = require('../services/hopDong.service');
 const authMiddleware = require('../middlewares/auth.middleware');
 
 router.use(authMiddleware);
@@ -8,7 +9,7 @@ router.use(authMiddleware);
 // GET /api/thanh-toan/thong-tin-ky-dau/:maHD
 router.get('/thong-tin-ky-dau/:maHD', async (req, res, next) => {
   try {
-    const data = await ThanhToan_BUS.LayThongTinThanhToanKyDau(req.params.maHD);
+    const data = await HopDong_BUS.LayThongTinThanhToanKyDau(req.params.maHD);
     res.json(data);
   } catch (err) {
     next(err);

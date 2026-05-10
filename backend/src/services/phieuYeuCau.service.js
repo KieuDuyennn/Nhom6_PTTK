@@ -62,7 +62,6 @@ class phieuYeuCauService {
         thoigiandukienvao: data.NgayDuKienDonVao || null,
         thoihanthue: parseInt(data.ThoiHanThue) || 6,
         yeucaukhac: data.YeuCauKhac || null,
-        gioitinh: data.GioiTinh || null,           // Lưu giới tính từ form
         thoigianhenxem: data.ThoiGianHenXem || null, // Lưu lịch hẹn khi đặt
         trangthai: 'Đang hẹn xem',  // Mới tạo: chờ đặt lịch xem phòng
         loaihinhthue: hinhThucDb,
@@ -197,49 +196,18 @@ class phieuYeuCauService {
     }
   }
 
-  static async layChiTiet(mayc) {
-    try {
-      return await phieuYeuCauDao.getChiTiet(mayc);
-    } catch (error) {
-      console.error('Lỗi phieuYeuCauService.layChiTiet:', error);
-      return { success: false, error };
-    }
-  }
-
-  static async updateTrangThaiChot(mayc, maphong, magiuong, trangthaichot) {
-    try {
-      return await phieuYeuCauDao.updateTrangThaiChot(mayc, maphong, magiuong, trangthaichot);
-    } catch (error) {
-      console.error('Lỗi phieuYeuCauService.updateTrangThaiChot:', error);
-      return { success: false, error };
-    }
-  }
-
-  static async deleteChiTiet(mayc, maphong, magiuong) {
-    try {
-      return await phieuYeuCauDao.deleteChiTiet(mayc, maphong, magiuong);
-    } catch (error) {
-      console.error('Lỗi phieuYeuCauService.deleteChiTiet:', error);
-      return { success: false, error };
-    }
-  }
 
   static async huyLich(mayc) {
     try {
-      // delete chi_tiet first
-      const { success: delCTSuccess, error: delCTError } = await phieuYeuCauDao.deleteChiTiet(mayc, null, null).catch(() => ({}));
-      // Note: deleteChiTiet expects specific keys; we will use supabase delete by mayc in DAO deletePhieu which already deletes phieu. But ensure chi_tiet removed first.
-      const supabase = require('../config/supabase');
-      const { error: chiTietError } = await supabase
-        .from('chi_tiet_phieu_yeu_cau')
-        .delete()
-        .eq('mayc', mayc);
-
-      if (chiTietError) {
-        console.error('Lỗi xóa chi_tiet trong huyLich:', chiTietError);
-        return { success: false, error: chiTietError };
+      // Xóa chi tiết phiếu trước (sử dụng DAO chuyên biệt)
+      const { success: delCTSuccess, error: delCTError } = await chiTietPhieuYeuCauDao.deleteChiTiet(mayc, null, null);
+      
+      if (!delCTSuccess && delCTError) {
+        console.error('Lỗi xóa chi tiết trong huyLich:', delCTError);
+        return { success: false, error: delCTError };
       }
 
+      // Sau đó mới xóa phiếu yêu cầu
       return await phieuYeuCauDao.deletePhieu(mayc);
     } catch (error) {
       console.error('Lỗi phieuYeuCauService.huyLich:', error);

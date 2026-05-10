@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '../components/MainLayout';
 import ModalXacNhanChot from '../components/ModalXacNhanChot';
-import axios from 'axios';
+import { phieuYeuCauService } from '../services/phieuYeuCauService';
 
 const ChiTietLichHen = () => {
   const { id } = useParams();
@@ -26,13 +26,12 @@ const ChiTietLichHen = () => {
 
   const fetchChiTiet = async () => {
     try {
-      const response = await axios.get(`http://localhost:3001/api/phieu-yeu-cau/chi-tiet/${id}`);
-      if (response.data.success) {
-        console.log('Chi tiết phiếu:', response.data.data);
-        setData(response.data.data);
+      const res = await phieuYeuCauService.layChiTiet(id);
+      if (res.success) {
+        setData(res.data);
 
         const nextChotItems = {};
-        const chiTietRows = response.data.data?.chi_tiet || [];
+        const chiTietRows = res.data?.chi_tiet || [];
         chiTietRows.forEach(it => {
           if (it.trangthaichot === 'Chốt') {
             const roomKey = getRoomKey(it);
@@ -69,15 +68,12 @@ const ChiTietLichHen = () => {
 
       // 1. Update trangthaichot = 'Chốt' cho item / toàn bộ giường của phòng nguyên căn
       for (const selectedItem of selectedItems) {
-        await axios.patch(
-          `http://localhost:3001/api/phieu-yeu-cau/update-trang-thai-chot`,
-          {
-            mayc: id,
-            maphong: selectedItem.maphong,
-            magiuong: selectedItem.magiuong,
-            trangthaichot: 'Chốt'
-          }
-        );
+        await phieuYeuCauService.updateTrangThaiChot({
+          mayc: id,
+          maphong: selectedItem.maphong,
+          magiuong: selectedItem.magiuong,
+          trangthaichot: 'Chốt'
+        });
       }
 
       // 2. Xóa các item không được chốt
@@ -86,9 +82,7 @@ const ChiTietLichHen = () => {
       });
 
       for (const deleteItem of itemsToDelete) {
-        await axios.delete(
-          `http://localhost:3001/api/phieu-yeu-cau/chi-tiet/${id}/${deleteItem.maphong}/${deleteItem.magiuong}`
-        );
+        await phieuYeuCauService.deleteChiTiet(id, deleteItem.maphong, deleteItem.magiuong);
       }
 
       // 3. Update state UI - mark này là chốt
@@ -110,19 +104,15 @@ const ChiTietLichHen = () => {
   const handleHoanThanhTuVan = async () => {
     setIsUpdating(true);
     try {
-      const res = await axios.patch(
-        `http://localhost:3001/api/phieu-yeu-cau/update-trang-thai`,
-        {
-          mayc: id,
-          trangthai: 'Cần xác nhận'
-        }
-      );
+      const res = await phieuYeuCauService.updateTrangThai({
+        mayc: id,
+        trangthai: 'Cần xác nhận'
+      });
 
-      if (res.data.success) {
-        alert('Cập nhật trạng thái phiếu thành "Cần xác nhận" thành công!');
+      if (res.success) {
         navigate('/lich-hen');
       } else {
-        alert('Lỗi: ' + (res.data.message || 'Không rõ lý do'));
+        alert('Lỗi: ' + (res.message || 'Không rõ lý do'));
       }
     } catch (error) {
       console.error('Lỗi hoàn thành tư vấn:', error);
@@ -192,12 +182,12 @@ const ChiTietLichHen = () => {
       const macn = it.macn || phong.macn;
       const roomId = `${maphong}|${macn}`;
       if (!map[roomId]) {
-        map[roomId] = { 
+        map[roomId] = {
           roomId,
-          phong: phong, 
-          macn: macn, 
-          maphong: maphong, 
-          giuongs: [] 
+          phong: phong,
+          macn: macn,
+          maphong: maphong,
+          giuongs: []
         };
       }
       if (it.magiuong) map[roomId].giuongs.push(it.magiuong);
@@ -208,9 +198,9 @@ const ChiTietLichHen = () => {
   return (
     <MainLayout>
       <div className="max-w-4xl mx-auto w-full px-4 py-4">
-        
+
         {/* Back Navigation */}
-        <button 
+        <button
           onClick={() => navigate('/lich-hen')}
           className="flex items-center gap-2 text-gray-500 hover:text-navy transition-colors mb-4 group"
         >
@@ -227,7 +217,7 @@ const ChiTietLichHen = () => {
         {/* Section 1: Thông tin khách hàng */}
         <div className="bg-white rounded-[24px] border border-gray-100 p-6 shadow-md mb-4">
           <h2 className="text-[18px] font-bold text-navy mb-4">Thông tin khách hàng</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
             <div className="md:col-span-2 flex items-center gap-6 mb-2">
               <div className="w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center text-pink-700 font-bold text-lg">{getInitials(khachHang.hoten)}</div>
@@ -343,11 +333,10 @@ const ChiTietLichHen = () => {
                           <button
                             onClick={() => handleDaChon(itemKey, { maphong: g.maphong, macn: g.macn, roomId: g.roomId, giuongs: g.giuongs, isNguyenCanRoom: true })}
                             disabled={isUpdating || isCot || data.trangthai !== 'Đang hẹn xem'}
-                            className={`inline-flex items-center gap-2 text-white text-[12px] font-semibold px-4 py-2 rounded-full transition-all ${
-                              isCot
+                            className={`inline-flex items-center gap-2 text-white text-[12px] font-semibold px-4 py-2 rounded-full transition-all ${isCot
                                 ? 'bg-green-600 cursor-not-allowed'
                                 : 'bg-pink-600 hover:bg-pink-700 active:scale-95'
-                            } disabled:opacity-60`}
+                              } disabled:opacity-60`}
                           >
                             {isCot ? '✓ Đã chốt' : 'Chốt'}
                           </button>
@@ -388,11 +377,10 @@ const ChiTietLichHen = () => {
                           <button
                             onClick={() => handleDaChon(itemKey, { maphong: g.maphong, roomId: g.roomId, magiuong: g.giuongs[0] })}
                             disabled={isUpdating || isCot || data.trangthai !== 'Đang hẹn xem'}
-                            className={`inline-flex items-center gap-2 text-white text-[12px] font-semibold px-4 py-2 rounded-full transition-all ${
-                              isCot
+                            className={`inline-flex items-center gap-2 text-white text-[12px] font-semibold px-4 py-2 rounded-full transition-all ${isCot
                                 ? 'bg-green-600 cursor-not-allowed'
                                 : 'bg-pink-600 hover:bg-pink-700 active:scale-95'
-                            } disabled:opacity-60`}
+                              } disabled:opacity-60`}
                           >
                             {isCot ? '✓ Đã chốt' : 'Chốt'}
                           </button>
@@ -438,11 +426,10 @@ const ChiTietLichHen = () => {
                           <button
                             onClick={() => handleDaChon(itemKey, { maphong, magiuong: item.magiuong })}
                             disabled={isUpdating || isCot || data.trangthai !== 'Đang hẹn xem'}
-                            className={`inline-flex items-center gap-2 text-white text-[12px] font-semibold px-4 py-2 rounded-full transition-all ${
-                              isCot
+                            className={`inline-flex items-center gap-2 text-white text-[12px] font-semibold px-4 py-2 rounded-full transition-all ${isCot
                                 ? 'bg-green-600 cursor-not-allowed'
                                 : 'bg-pink-600 hover:bg-pink-700 active:scale-95'
-                            } disabled:opacity-60`}
+                              } disabled:opacity-60`}
                           >
                             {isCot ? '✓ Đã chốt' : 'Chốt'}
                           </button>
@@ -479,11 +466,10 @@ const ChiTietLichHen = () => {
                         <button
                           onClick={() => handleDaChon(itemKey, { maphong, magiuong: item.magiuong })}
                           disabled={isUpdating || isCot || data.trangthai !== 'Đang hẹn xem'}
-                          className={`inline-flex items-center gap-2 text-white text-[12px] font-semibold px-4 py-2 rounded-full transition-all ${
-                            isCot
+                          className={`inline-flex items-center gap-2 text-white text-[12px] font-semibold px-4 py-2 rounded-full transition-all ${isCot
                               ? 'bg-green-600 cursor-not-allowed'
                               : 'bg-pink-600 hover:bg-pink-700 active:scale-95'
-                          } disabled:opacity-60`}
+                            } disabled:opacity-60`}
                         >
                           {isCot ? '✓ Đã chốt' : 'Chốt'}
                         </button>

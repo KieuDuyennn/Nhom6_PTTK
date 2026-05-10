@@ -2,36 +2,9 @@ const thanhToanDAO = require('../dao/thanhToan.dao');
 const hopDongBUS = require('./hopDong.service');
 const dichVuBUS = require('./dichVu.service');
 
-function tinhTongGiaGiuong(hopDong) {
- 
-  const tienThueThang = Number(hopDong?.giathue) || 0;
 
-  return tienThueThang;
-}
 
 class ThanhToan_BUS {
-  static async LayThongTinThanhToanKyDau(maHD) {
-    // 1. Lấy thông tin hợp đồng qua BUS
-    const hopDong = await hopDongBUS.LayTheoMa(maHD);
-    if (!hopDong) throw new Error('Không tìm thấy hợp đồng');
-
-    // 2. Tính tổng giá giường = tiền thuê hợp đồng
-    const tongGiaGiuong = tinhTongGiaGiuong(hopDong);
-
-    // 3. Lấy thông tin chi nhánh để lấy dịch vụ
-    // Giả sử lấy MaCN từ phòng đầu tiên trong hợp đồng
-    const maCN = hopDong.hop_dong_giuong?.[0]?.giuong?.phong?.macn;
-    let dichVu = [];
-    if (maCN) {
-      dichVu = await dichVuBUS.LayTheoMaCN(maCN);
-    }
-
-    return {
-      hopDong,
-      tongGiaGiuong,
-      dichVu
-    };
-  }
 
   static async TaoMa() {
     return await thanhToanDAO.sinhMaThanhToan();
@@ -46,7 +19,7 @@ class ThanhToan_BUS {
     }
 
     // 2. Tính toán tổng tiền
-    const tongGiaGiuong = tinhTongGiaGiuong(hopDong);
+    const tongGiaGiuong = hopDongBUS.TinhTongGiaGiuong(hopDong);
     const maCN = hopDong.hop_dong_giuong?.[0]?.giuong?.phong?.macn;
     let tongDichVu = 0;
     if (maCN) {
