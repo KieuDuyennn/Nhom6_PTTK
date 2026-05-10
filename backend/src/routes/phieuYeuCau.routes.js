@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const timKiemPhongService = require('../services/timKiemPhong.service');
 const phieuYeuCauService = require('../services/phieuYeuCau.service');
 const chiTietPhieuYeuCauService = require('../services/chiTietPhieuYeuCau.service');
 
@@ -27,23 +26,6 @@ router.post('/dang-ky', async (req, res, next) => {
     } else {
       res.status(400).json(result);
     }
-  } catch (error) {
-    next(error);
-  }
-});
-
-// GET /api/phieu-yeu-cau/tim-kiem-phong?hinhThucThue=...&soNguoi=...&mucGia=...&chiNhanh=...&gioiTinh=...
-router.get('/tim-kiem-phong', async (req, res, next) => {
-  try {
-    const { hinhThucThue, soNguoi, mucGia, chiNhanh, gioiTinh } = req.query;
-
-    if (!hinhThucThue) {
-      return res.status(400).json({ success: false, message: 'Thiếu hình thức thuê' });
-    }
-
-    const result = await timKiemPhongService.timKiemPhong({ hinhThucThue, soNguoi, mucGia, chiNhanh, gioiTinh });
-
-    res.status(200).json(result);
   } catch (error) {
     next(error);
   }
