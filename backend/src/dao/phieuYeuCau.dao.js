@@ -57,63 +57,6 @@ class phieuYeuCauDao {
     return { success: true, data: gioBan };
   }
 
-  static async getChiTiet(mayc) {
-    const { data, error } = await supabase
-      .from('phieu_yeu_cau_xem_phong')
-      .select(`*, khach_hang (*), chi_tiet:chi_tiet_phieu_yeu_cau(*)`)
-      .eq('mayc', mayc)
-      .single();
-
-    if (error) {
-      console.error('Lỗi phieuYeuCauDao.getChiTiet:', error);
-      return { success: false, error };
-    }
-
-    // get chi_tiet rows joined to giuong->phong
-    const { data: chiTietData, error: chiTietError } = await supabase
-      .from('chi_tiet_phieu_yeu_cau')
-      .select(`mayc, magiuong, maphong, trangthaichot, giuong (*, phong (*))`)
-      .eq('mayc', mayc);
-
-    if (chiTietError) {
-      console.error('Lỗi phieuYeuCauDao.getChiTiet chi_tiet:', chiTietError);
-      return { success: true, data: { ...data, chi_tiet: [] }, warning: chiTietError };
-    }
-
-    return { success: true, data: { ...data, chi_tiet: chiTietData } };
-  }
-
-  static async updateTrangThaiChot(mayc, maphong, magiuong, trangthaichot) {
-    const { data, error } = await supabase
-      .from('chi_tiet_phieu_yeu_cau')
-      .update({ trangthaichot })
-      .eq('mayc', mayc)
-      .eq('maphong', maphong)
-      .eq('magiuong', magiuong)
-      .select();
-
-    if (error) {
-      console.error('Lỗi phieuYeuCauDao.updateTrangThaiChot:', error);
-      return { success: false, error };
-    }
-    return { success: true, data };
-  }
-
-  static async deleteChiTiet(mayc, maphong, magiuong) {
-    const { data, error } = await supabase
-      .from('chi_tiet_phieu_yeu_cau')
-      .delete()
-      .eq('mayc', mayc)
-      .eq('maphong', maphong)
-      .eq('magiuong', magiuong)
-      .select();
-
-    if (error) {
-      console.error('Lỗi phieuYeuCauDao.deleteChiTiet:', error);
-      return { success: false, error };
-    }
-    return { success: true, data };
-  }
 
   static async deletePhieu(mayc) {
     const { data, error } = await supabase
