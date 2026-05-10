@@ -3,6 +3,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth.routes');
 const depositRoutes = require('./routes/deposit.routes');
 const phieuYeuCauRoutes = require('./routes/phieuYeuCau.routes');
+const phongRoutes = require('./routes/phong.routes');
 const checkoutRoutes = require('./routes/checkout.routes');
 const thanhToanRoutes = require('./routes/thanhToan.routes');
 const errorMiddleware = require('./middlewares/error.middleware');
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/deposit', depositRoutes);
 app.use('/api/phieu-yeu-cau', phieuYeuCauRoutes);
+app.use('/api/phong', phongRoutes);
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api/thanh-toan', thanhToanRoutes);
 
