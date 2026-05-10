@@ -151,15 +151,21 @@ class phieuYeuCauDao {
         thoigiandukienvao, thoihanthue, thoigianhenxem,
         ngayguiyeucau, trangthai,
         manv, makh,
-        khach_hang (makh, hoten, sdt, email, gioitinh, socccd)
+        khach_hang!inner (makh, hoten, sdt, email, gioitinh, socccd)
       `)
       .order('ngayguiyeucau', { ascending: false });
 
     if (trangthai) {
       query = query.eq('trangthai', trangthai);
     } else {
-      // Mặc định không load các phiếu đang trong quá trình hẹn xem (chưa hoàn thành xem phòng)
       query = query.not('trangthai', 'eq', 'Đang hẹn xem');
+    }
+
+    if (keyword) {
+      const kw = `%${keyword}%`;
+      // Tìm kiếm theo MaYC hoặc Tên khách hoặc SĐT khách
+      // Lưu ý: Sử dụng !inner join ở trên cho phép ta filter theo khach_hang.hoten/sdt trực tiếp
+      query = query.or(`mayc.ilike.${kw},khach_hang.hoten.ilike.${kw},khach_hang.sdt.ilike.${kw}`);
     }
 
     const { data, error } = await query;
@@ -168,17 +174,7 @@ class phieuYeuCauDao {
       return { success: false, error };
     }
 
-    let result = data || [];
-    if (keyword) {
-      const kw = keyword.toLowerCase();
-      result = result.filter(p =>
-        p.mayc?.toLowerCase().includes(kw) ||
-        p.khach_hang?.hoten?.toLowerCase().includes(kw) ||
-        p.khach_hang?.sdt?.includes(kw)
-      );
-    }
-
-    return { success: true, data: result };
+    return { success: true, data: data || [] };
   }
 
   // Method: Lấy danh sách PYC trạng thái 'Cần xác nhận', có tìm kiếm keyword
