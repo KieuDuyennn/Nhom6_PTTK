@@ -66,8 +66,11 @@ class phongService {
               return numA - numB;
             });
             
-          // Điều kiện bắt buộc: số giường trống phải BẰNG ĐÚNG số người
-          if (giuongTrong.length !== soNguoiThue) return [];
+          // Nếu số giường trống ít hơn số người thì loại
+          if (giuongTrong.length < soNguoiThue) return [];
+
+          // Chọn đúng `soNguoiThue` giường trống (nếu có nhiều hơn, chỉ lấy N đầu sau khi sort)
+          const selectedGiuong = giuongTrong.slice(0, soNguoiThue);
 
           const tongTienThue = (phong.tienthuethang || 0) * soNguoiThue;
           const thoaGia = !mucGiaMax || mucGiaMax <= 0 || tongTienThue <= mucGiaMax;
@@ -77,9 +80,9 @@ class phongService {
             ...phong,
             giaMoiGiuong: phong.tienthuethang,
             tongTienThue,
-            dsGiuong: giuongTrong,
-            dsMagiuong: giuongTrong.map(g => g.magiuong),
-            magiuong: giuongTrong[0]?.magiuong || null,
+            dsGiuong: selectedGiuong,
+            dsMagiuong: selectedGiuong.map(g => g.magiuong),
+            magiuong: selectedGiuong[0]?.magiuong || null,
           }];
         });
 
